@@ -20,6 +20,7 @@ Customizaciones locales para OpenCode: plugins, agents, commands, scripts y snip
 Este repo incluye una copia versionada de tus custom agents globales:
 
 - `ask`: agente read-only para investigación, exploración de código y web research.
+- `plan`: agente primario read-only para planificación, análisis y auditorías.
 - `fast`: agente full-access rápido usando Kimi K2.6 en OpenRouter.
 - `design`: especialista UI/UX usando Claude Opus 4.7 en Anthropic.
 
@@ -40,6 +41,7 @@ Ver `docs/stack.md` para detalles del flujo y los límites de este repo.
 Este repo incluye custom commands globales:
 
 - `/clean-code`: auditoría read-only de arquitectura, mantenibilidad, SRP, SOLID y code smells.
+- `/audit`: auditoría de seguridad read-only de la PR actual o del repositorio completo usando el agente `plan`.
 - `/branch`: crea un worktree con Worktrunk desde el plan actual y abre una sesión limpia de OpenCode allí.
 - `/push`: ejecuta tests/checks relevantes, crea un commit convencional y hace push.
 - `/ship`: prepara la rama, hace push, abre o reutiliza una PR y verifica checks.

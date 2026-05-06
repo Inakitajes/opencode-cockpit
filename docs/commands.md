@@ -6,10 +6,23 @@ This repo includes global OpenCode commands stored in `commands/*.md`. When inst
 
 | Command | Agent | Model | Purpose |
 | --- | --- | --- | --- |
+| `/audit` | `plan` | Current/default plan model | Read-only security audit for the current PR branch or full repository. |
 | `/clean-code` | Current session | Current session | Read-only architecture and maintainability audit. |
 | `/branch` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Create a Worktrunk worktree from the current plan and open a fresh OpenCode session there. |
 | `/push` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Run relevant tests, create a conventional commit, and push the branch. |
 | `/ship` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Verify tests, push work, open or reuse a PR, and check CI status. |
+
+## `/audit`
+
+Use this when you want a security audit report without code changes. It runs with the `plan` agent by default. On feature branches, it audits the PR branch diff against the most likely base branch and includes local uncommitted changes when present. On `main`, `master`, the default branch, detached HEAD, or when no concrete branch scope can be established, it audits the full repository.
+
+Example:
+
+```text
+/audit base main, focus auth/session changes
+```
+
+The output is a concise report with scope, risks found, a prioritized action plan, and audit notes.
 
 ## `/clean-code`
 
