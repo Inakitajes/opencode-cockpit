@@ -11,6 +11,7 @@ Customizaciones locales para OpenCode: plugins, agents, commands, scripts y snip
 - `scripts/bin/*`: helpers locales para integraciones como Worktrunk.
 - `docs/agents.md`: documentación de los agents incluidos.
 - `docs/commands.md`: documentación de los commands incluidos.
+- `docs/stack.md`: documentación del stack local de programación.
 - `scripts/install.sh`: instalador local que copia plugins, agents y commands a `~/.config/opencode`, y registra el plugin TUI.
 - `config/tui.json`: ejemplo mínimo de configuración TUI.
 
@@ -24,14 +25,24 @@ Este repo incluye una copia versionada de tus custom agents globales:
 
 Ver `docs/agents.md` para detalles de modelos, permisos y uso recomendado.
 
+## Stack
+
+Mi stack local de programación se apoya en OpenCode, Worktrunk (`wt`) y Ghostty:
+
+- OpenCode como cockpit de agentes, commands y plugins.
+- Worktrunk para crear ramas/worktrees aislados desde planes con `/branch`.
+- Ghostty como terminal principal para ejecutar las sesiones de OpenCode.
+
+Ver `docs/stack.md` para detalles del flujo y los límites de este repo.
+
 ## Commands
 
-Este repo incluye tres custom commands globales:
+Este repo incluye custom commands globales:
 
 - `/clean-code`: auditoría read-only de arquitectura, mantenibilidad, SRP, SOLID y code smells.
 - `/branch`: crea un worktree con Worktrunk desde el plan actual y abre una sesión limpia de OpenCode allí.
-- `/safe-commit`: ejecuta tests/checks relevantes, crea un commit convencional y hace push.
-- `/ready-pr`: prepara la rama, hace push, abre o reutiliza una PR y verifica checks.
+- `/push`: ejecuta tests/checks relevantes, crea un commit convencional y hace push.
+- `/ship`: prepara la rama, hace push, abre o reutiliza una PR y verifica checks.
 
 Ver `docs/commands.md` para detalles de uso y argumentos.
 
@@ -43,7 +54,7 @@ Ver `docs/commands.md` para detalles de uso y argumentos.
 
 ## Notificaciones
 
-En macOS el plugin server usa `osascript` para mostrar notificaciones locales:
+En macOS el plugin server usa `osascript` para mostrar notificaciones locales. Primero intenta emitirlas desde Ghostty para que el click vuelva al terminal; si falla, usa el contexto genérico de AppleScript:
 
 - `OpenCode 🟢`: la sesión ha terminado.
 - `OpenCode 🔴`: la sesión requiere atención.
@@ -97,6 +108,7 @@ cp agents/*.md ~/.config/opencode/agents/
 
 ```sh
 cp commands/*.md ~/.config/opencode/commands/
+rm -f ~/.config/opencode/commands/safe-commit.md ~/.config/opencode/commands/ready-pr.md
 ```
 
 6. Registra el plugin TUI en `~/.config/opencode/tui.json`.
@@ -119,6 +131,7 @@ Si ya tienes un `tui.json`, añade `"./tui-plugins/status-title.js"` al array `p
 - No usa paquetes npm de terceros.
 - No ejecuta código remoto.
 - El plugin server ejecuta `osascript` con `Bun.spawn([...])`, pasando los argumentos como array y escapando el texto de la notificación.
+- En macOS intenta enviar notificaciones desde Ghostty (`com.mitchellh.ghostty`) antes de usar AppleScript genérico.
 - El plugin TUI solo usa la API local de OpenCode para leer estado de sesiones y actualizar el título del terminal.
 - Los agents son archivos Markdown de configuración local de OpenCode.
 - Los commands son archivos Markdown de configuración local de OpenCode.
@@ -155,8 +168,8 @@ rm ~/.config/opencode/agents/ask.md
 rm ~/.config/opencode/agents/fast.md
 rm ~/.config/opencode/agents/design.md
 rm ~/.config/opencode/commands/clean-code.md
-rm ~/.config/opencode/commands/safe-commit.md
-rm ~/.config/opencode/commands/ready-pr.md
+rm ~/.config/opencode/commands/push.md
+rm ~/.config/opencode/commands/ship.md
 rm ~/.config/opencode/commands/branch.md
 rm ~/.config/opencode/bin/opencode-branch
 rm ~/.config/opencode/bin/opencode-branch-open

@@ -1,6 +1,7 @@
 ---
 description: Create a Worktrunk worktree from the current plan and open a fresh OpenCode session there
 agent: fast
+model: "openrouter/z-ai/glm-4.7"
 ---
 
 Create a new Worktrunk worktree from the plan we have just designed in this conversation, then open a clean OpenCode session in that new worktree with the plan passed as the starting prompt.

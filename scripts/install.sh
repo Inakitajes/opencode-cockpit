@@ -36,6 +36,15 @@ copy_file() {
   cp "${source}" "${target}"
 }
 
+backup_legacy_command() {
+  local name="$1"
+  local target="${COMMANDS_TARGET_DIR}/${name}.md"
+
+  if [ -f "${target}" ]; then
+    mv "${target}" "${target}.bak.${STAMP}"
+  fi
+}
+
 copy_file "${SERVER_PLUGIN_SOURCE}" "${SERVER_PLUGIN_TARGET}"
 copy_file "${TUI_PLUGIN_SOURCE}" "${TUI_PLUGIN_TARGET}"
 
@@ -46,6 +55,9 @@ done
 for command in "${COMMANDS_SOURCE_DIR}"/*.md; do
   copy_file "${command}" "${COMMANDS_TARGET_DIR}/$(basename "${command}")"
 done
+
+backup_legacy_command "safe-commit"
+backup_legacy_command "ready-pr"
 
 copy_file "${BIN_SOURCE_DIR}/opencode-branch.sh" "${BIN_TARGET_DIR}/opencode-branch"
 copy_file "${BIN_SOURCE_DIR}/opencode-branch-open.sh" "${BIN_TARGET_DIR}/opencode-branch-open"

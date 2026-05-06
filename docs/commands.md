@@ -7,9 +7,9 @@ This repo includes global OpenCode commands stored in `commands/*.md`. When inst
 | Command | Agent | Model | Purpose |
 | --- | --- | --- | --- |
 | `/clean-code` | Current session | Current session | Read-only architecture and maintainability audit. |
-| `/branch` | `fast` | Agent default | Create a Worktrunk worktree from the current plan and open a fresh OpenCode session there. |
-| `/safe-commit` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Run relevant tests, create a conventional commit, and push the branch. |
-| `/ready-pr` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Verify tests, push work, open or reuse a PR, and check CI status. |
+| `/branch` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Create a Worktrunk worktree from the current plan and open a fresh OpenCode session there. |
+| `/push` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Run relevant tests, create a conventional commit, and push the branch. |
+| `/ship` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Verify tests, push work, open or reuse a PR, and check CI status. |
 
 ## `/clean-code`
 
@@ -27,6 +27,8 @@ The optional argument narrows the audit scope.
 
 Use this after a planning conversation when you want to turn the plan into a new isolated worktree. The command asks OpenCode to infer a branch name from the plan, create a Worktrunk worktree with `wt switch --create`, and open a fresh OpenCode session in that new worktree with the plan passed as the initial prompt.
 
+This command pins `openrouter/z-ai/glm-4.7` for stronger branch handoff automation. The installer configures OpenRouter throughput routing for this model, which is equivalent to OpenRouter's `:nitro` variant.
+
 Example:
 
 ```text
@@ -43,9 +45,9 @@ Requirements:
 
 - `wt` must be installed and configured. See <https://github.com/max-sixty/worktrunk>.
 - The installer copies helper scripts to `~/.config/opencode/bin/`.
-- On macOS, the helper opens a new Terminal window. Other systems print the command to run manually.
+- On macOS, the helper opens a new Ghostty tab in the front window when possible, falls back to a new Ghostty window, then Terminal. Other systems print the command to run manually.
 
-## `/safe-commit`
+## `/push`
 
 Use this when the current work is ready to commit and push. It asks OpenCode to inspect the diff, run relevant tests/checks when available, create a conventional commit, and push the current branch.
 
@@ -54,12 +56,12 @@ This command pins `openrouter/z-ai/glm-4.7` for stronger delivery automation. Th
 Example:
 
 ```text
-/safe-commit add billing retry handling
+/push add billing retry handling
 ```
 
 The optional argument is used as guidance for the intended commit scope/message.
 
-## `/ready-pr`
+## `/ship`
 
 Use this when a branch should be prepared for review. It checks local state, commits uncommitted work if needed, runs relevant tests/checks, pushes the branch, creates or reuses a GitHub PR, and checks CI status.
 
@@ -68,7 +70,7 @@ This command pins `openrouter/z-ai/glm-4.7` for stronger PR automation. The inst
 Example:
 
 ```text
-/ready-pr base main, title fix billing retry handling
+/ship base main, title fix billing retry handling
 ```
 
 The optional argument can provide PR title, base branch, or review context.
@@ -86,6 +88,7 @@ Or copy commands manually:
 ```sh
 mkdir -p ~/.config/opencode/commands
 cp commands/*.md ~/.config/opencode/commands/
+rm -f ~/.config/opencode/commands/safe-commit.md ~/.config/opencode/commands/ready-pr.md
 ```
 
 Restart OpenCode after installing or updating commands.

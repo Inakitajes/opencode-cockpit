@@ -23,7 +23,40 @@ exec opencode --prompt "\$(cat $(printf '%q' "$PLAN_FILE"))"
 EOF
 chmod +x "$BOOTSTRAP"
 
+open_ghostty_tab() {
+  osascript \
+    -e 'on run argv' \
+    -e 'set worktreeDir to item 1 of argv' \
+    -e 'set commandLine to item 2 of argv' \
+    -e 'tell application id "com.mitchellh.ghostty"' \
+    -e 'set cfg to new surface configuration from {initial working directory:worktreeDir, command:commandLine, wait after command:false}' \
+    -e 'if (count of windows) > 0 then' \
+    -e 'set createdTab to new tab in front window with configuration cfg' \
+    -e 'select tab createdTab' \
+    -e 'else' \
+    -e 'new window with configuration cfg' \
+    -e 'end if' \
+    -e 'activate' \
+    -e 'end tell' \
+    -e 'end run' \
+    "$WORKTREE_DIR" "/bin/bash $BOOTSTRAP"
+}
+
+open_ghostty_window() {
+  /usr/bin/open -na Ghostty --args --working-directory="$WORKTREE_DIR" -e /bin/bash "$BOOTSTRAP"
+}
+
 if [ "$(uname -s)" = "Darwin" ] && command -v osascript >/dev/null 2>&1; then
+  if open_ghostty_tab >/dev/null 2>&1; then
+    printf 'Opened a new Ghostty tab with OpenCode in %s\n' "$WORKTREE_DIR"
+    exit 0
+  fi
+
+  if open_ghostty_window >/dev/null 2>&1; then
+    printf 'Opened a new Ghostty window with OpenCode in %s\n' "$WORKTREE_DIR"
+    exit 0
+  fi
+
   CMD="/bin/bash $(printf '%q' "$BOOTSTRAP")"
   ESCAPED_CMD="${CMD//\\/\\\\}"
   ESCAPED_CMD="${ESCAPED_CMD//\"/\\\"}"

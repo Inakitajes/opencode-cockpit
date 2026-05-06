@@ -1,6 +1,7 @@
 const DEFAULT_TITLE = /^(New session - |Child session - )\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
 const DONE_THROTTLE_MS = 3000
 const ATTENTION_THROTTLE_MS = 10000
+const GHOSTTY_APP_ID = "com.mitchellh.ghostty"
 
 function clean(value, fallback) {
   const text = String(value ?? "")
@@ -24,17 +25,36 @@ function appleString(value) {
   return `"${String(value).replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`
 }
 
-async function notify(title, message) {
+async function runAppleScript(lines) {
   if (process.platform !== "darwin") return
   if (typeof Bun === "undefined" || typeof Bun.spawn !== "function") return
 
-  const script = `display notification ${appleString(message)} with title ${appleString(title)}`
+  const args = []
+  for (const line of lines) args.push("-e", line)
+
   try {
-    const proc = Bun.spawn(["osascript", "-e", script], {
+    const proc = Bun.spawn(["osascript", ...args], {
       stdout: "ignore",
       stderr: "ignore",
     })
-    await proc.exited
+    return (await proc.exited) === 0
+  } catch {
+    return false
+  }
+}
+
+async function notify(title, message) {
+  if (process.platform !== "darwin") return
+
+  const sentByGhostty = await runAppleScript([
+    `tell application id ${appleString(GHOSTTY_APP_ID)}`,
+    `display notification ${appleString(message)} with title ${appleString(title)}`,
+    "end tell",
+  ])
+  if (sentByGhostty) return
+
+  try {
+    await runAppleScript([`display notification ${appleString(message)} with title ${appleString(title)}`])
   } catch {
     // Notifications are best effort. OpenCode should not fail if macOS denies them.
   }

@@ -12,7 +12,7 @@ Follow this workflow:
 
 1. Inspect repository state with `git status --short --branch`.
 2. Identify the current branch, upstream tracking branch, and default base branch from the remote. Do not open a PR from `main` or `master` unless explicitly requested.
-3. If there are uncommitted changes, run the same safe workflow as `/safe-commit`: inspect changes, run relevant tests/checks, create a conventional commit, and avoid unrelated files.
+3. If there are uncommitted changes, run the same safe workflow as `/push`: inspect changes, run relevant tests/checks, create a conventional commit, and avoid unrelated files.
 4. If the working tree is clean, still run relevant tests/checks when available before opening the PR.
 5. Push the current branch. If no upstream is configured, use `git push -u origin <current-branch>` when `origin` exists. Never force push.
 6. Use `gh` to inspect whether a PR already exists for the current branch.
