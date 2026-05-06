@@ -7,18 +7,23 @@ CONFIG_DIR="${OPENCODE_CONFIG_DIR:-${HOME}/.config/opencode}"
 SERVER_PLUGIN_SOURCE="${ROOT_DIR}/plugins/server/session-notifications.js"
 TUI_PLUGIN_SOURCE="${ROOT_DIR}/plugins/tui/status-title.js"
 AGENTS_SOURCE_DIR="${ROOT_DIR}/agents"
+COMMANDS_SOURCE_DIR="${ROOT_DIR}/commands"
+BIN_SOURCE_DIR="${ROOT_DIR}/scripts/bin"
 
 SERVER_PLUGIN_DIR="${CONFIG_DIR}/plugins"
 TUI_PLUGIN_DIR="${CONFIG_DIR}/tui-plugins"
 AGENTS_TARGET_DIR="${CONFIG_DIR}/agents"
+COMMANDS_TARGET_DIR="${CONFIG_DIR}/commands"
+BIN_TARGET_DIR="${CONFIG_DIR}/bin"
 
 SERVER_PLUGIN_TARGET="${SERVER_PLUGIN_DIR}/session-notifications.js"
 TUI_PLUGIN_TARGET="${TUI_PLUGIN_DIR}/status-title.js"
 TUI_JSON="${CONFIG_DIR}/tui.json"
 TUI_ENTRY="./tui-plugins/status-title.js"
+OPENCODE_JSON="${CONFIG_DIR}/opencode.json"
 STAMP="$(date +%Y%m%d%H%M%S)"
 
-mkdir -p "${SERVER_PLUGIN_DIR}" "${TUI_PLUGIN_DIR}" "${AGENTS_TARGET_DIR}"
+mkdir -p "${SERVER_PLUGIN_DIR}" "${TUI_PLUGIN_DIR}" "${AGENTS_TARGET_DIR}" "${COMMANDS_TARGET_DIR}" "${BIN_TARGET_DIR}"
 
 copy_file() {
   local source="$1"
@@ -37,6 +42,14 @@ copy_file "${TUI_PLUGIN_SOURCE}" "${TUI_PLUGIN_TARGET}"
 for agent in "${AGENTS_SOURCE_DIR}"/*.md; do
   copy_file "${agent}" "${AGENTS_TARGET_DIR}/$(basename "${agent}")"
 done
+
+for command in "${COMMANDS_SOURCE_DIR}"/*.md; do
+  copy_file "${command}" "${COMMANDS_TARGET_DIR}/$(basename "${command}")"
+done
+
+copy_file "${BIN_SOURCE_DIR}/opencode-branch.sh" "${BIN_TARGET_DIR}/opencode-branch"
+copy_file "${BIN_SOURCE_DIR}/opencode-branch-open.sh" "${BIN_TARGET_DIR}/opencode-branch-open"
+chmod +x "${BIN_TARGET_DIR}/opencode-branch" "${BIN_TARGET_DIR}/opencode-branch-open"
 
 if command -v node >/dev/null 2>&1; then
   node - "${TUI_JSON}" "${TUI_ENTRY}" <<'NODE'
@@ -88,5 +101,53 @@ else
   fi
 fi
 
+if command -v node >/dev/null 2>&1; then
+  node - "${OPENCODE_JSON}" <<'NODE'
+const fs = require("fs")
+
+const file = process.argv[2]
+const schema = "https://opencode.ai/config.json"
+
+let config = { $schema: schema }
+let existed = false
+
+if (fs.existsSync(file)) {
+  existed = true
+  const raw = fs.readFileSync(file, "utf8")
+  try {
+    config = raw.trim() ? JSON.parse(raw) : { $schema: schema }
+  } catch (error) {
+    console.error(`Could not update ${file}: it is not plain JSON.`)
+    console.error('Add provider.openrouter.models["z-ai/glm-4.7"].options.provider.sort = "throughput" manually.')
+    process.exit(2)
+  }
+}
+
+if (!config || typeof config !== "object" || Array.isArray(config)) config = { $schema: schema }
+if (!config.$schema) config.$schema = schema
+config.provider ??= {}
+config.provider.openrouter ??= {}
+config.provider.openrouter.models ??= {}
+config.provider.openrouter.models["z-ai/glm-4.7"] ??= {}
+config.provider.openrouter.models["z-ai/glm-4.7"].options ??= {}
+config.provider.openrouter.models["z-ai/glm-4.7"].options.provider ??= {}
+
+const provider = config.provider.openrouter.models["z-ai/glm-4.7"].options.provider
+const changed = provider.sort !== "throughput"
+provider.sort = "throughput"
+
+if (!changed && existed) process.exit(0)
+
+if (existed) {
+  const backup = `${file}.bak.${new Date().toISOString().replace(/[-:TZ.]/g, "").slice(0, 14)}`
+  fs.copyFileSync(file, backup)
+}
+
+fs.writeFileSync(file, `${JSON.stringify(config, null, 2)}\n`)
+NODE
+else
+  printf 'Node.js is not available. Add OpenRouter throughput routing for z-ai/glm-4.7 to %s manually.\n' "${OPENCODE_JSON}" >&2
+fi
+
 printf 'Installed OpenCode cockpit files into %s\n' "${CONFIG_DIR}"
-printf 'Restart OpenCode tabs to load plugins and agents.\n'
+printf 'Restart OpenCode tabs to load plugins, agents, and commands.\n'

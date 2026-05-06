@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "bun -e \"await import('./plugins/tui/status-title.js'); await import('./plugins/server/session-notifications.js'); console.log('plugin imports ok')\"",
+    "check": "bun run check:plugins && bun run check:scripts",
+    "check:plugins": "bun -e \"await import('./plugins/tui/status-title.js'); await import('./plugins/server/session-notifications.js'); console.log('plugin imports ok')\"",
+    "check:scripts": "bash -n scripts/install.sh scripts/bin/opencode-branch.sh scripts/bin/opencode-branch-open.sh",
     "install:local": "bash scripts/install.sh"
   }
 }

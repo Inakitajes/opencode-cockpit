@@ -1,14 +1,17 @@
 # OpenCode Cockpit
 
-Customizaciones locales para OpenCode: plugins, agents, scripts y snippets de configuración para mejorar el flujo diario.
+Customizaciones locales para OpenCode: plugins, agents, commands, scripts y snippets de configuración para mejorar el flujo diario.
 
 ## Qué Incluye
 
 - `plugins/tui/status-title.js`: plugin TUI que cambia el título de la pestaña/ventana del terminal.
 - `plugins/server/session-notifications.js`: plugin server que envía notificaciones locales de macOS.
 - `agents/*.md`: custom agents globales versionados.
+- `commands/*.md`: custom slash commands globales versionados.
+- `scripts/bin/*`: helpers locales para integraciones como Worktrunk.
 - `docs/agents.md`: documentación de los agents incluidos.
-- `scripts/install.sh`: instalador local que copia plugins y agents a `~/.config/opencode`, y registra el plugin TUI.
+- `docs/commands.md`: documentación de los commands incluidos.
+- `scripts/install.sh`: instalador local que copia plugins, agents y commands a `~/.config/opencode`, y registra el plugin TUI.
 - `config/tui.json`: ejemplo mínimo de configuración TUI.
 
 ## Agents
@@ -20,6 +23,17 @@ Este repo incluye una copia versionada de tus custom agents globales:
 - `design`: especialista UI/UX usando Claude Opus 4.7 en Anthropic.
 
 Ver `docs/agents.md` para detalles de modelos, permisos y uso recomendado.
+
+## Commands
+
+Este repo incluye tres custom commands globales:
+
+- `/clean-code`: auditoría read-only de arquitectura, mantenibilidad, SRP, SOLID y code smells.
+- `/branch`: crea un worktree con Worktrunk desde el plan actual y abre una sesión limpia de OpenCode allí.
+- `/safe-commit`: ejecuta tests/checks relevantes, crea un commit convencional y hace push.
+- `/ready-pr`: prepara la rama, hace push, abre o reutiliza una PR y verifica checks.
+
+Ver `docs/commands.md` para detalles de uso y argumentos.
 
 ## Estados
 
@@ -45,14 +59,20 @@ Desde la raíz de este repositorio:
 bash scripts/install.sh
 ```
 
-Después reinicia las pestañas de OpenCode. Los plugins y agents se cargan al arrancar.
+Después reinicia las pestañas de OpenCode. Los plugins, agents y commands se cargan al arrancar.
+
+El comando `/branch` requiere Worktrunk (`wt`). Instalación recomendada:
+
+```sh
+brew install worktrunk && wt config shell install
+```
 
 ## Instalación Manual
 
 1. Crea las carpetas globales.
 
 ```sh
-mkdir -p ~/.config/opencode/plugins ~/.config/opencode/tui-plugins ~/.config/opencode/agents
+mkdir -p ~/.config/opencode/plugins ~/.config/opencode/tui-plugins ~/.config/opencode/agents ~/.config/opencode/commands
 ```
 
 2. Copia el plugin server.
@@ -73,7 +93,13 @@ cp plugins/tui/status-title.js ~/.config/opencode/tui-plugins/status-title.js
 cp agents/*.md ~/.config/opencode/agents/
 ```
 
-5. Registra el plugin TUI en `~/.config/opencode/tui.json`.
+5. Copia los commands.
+
+```sh
+cp commands/*.md ~/.config/opencode/commands/
+```
+
+6. Registra el plugin TUI en `~/.config/opencode/tui.json`.
 
 Si no tienes `tui.json`, puedes usar:
 
@@ -86,7 +112,7 @@ Si no tienes `tui.json`, puedes usar:
 
 Si ya tienes un `tui.json`, añade `"./tui-plugins/status-title.js"` al array `plugin` existente.
 
-6. Reinicia OpenCode.
+7. Reinicia OpenCode.
 
 ## Seguridad
 
@@ -95,6 +121,8 @@ Si ya tienes un `tui.json`, añade `"./tui-plugins/status-title.js"` al array `p
 - El plugin server ejecuta `osascript` con `Bun.spawn([...])`, pasando los argumentos como array y escapando el texto de la notificación.
 - El plugin TUI solo usa la API local de OpenCode para leer estado de sesiones y actualizar el título del terminal.
 - Los agents son archivos Markdown de configuración local de OpenCode.
+- Los commands son archivos Markdown de configuración local de OpenCode.
+- Los helpers se instalan en `~/.config/opencode/bin` y no ejecutan código remoto.
 
 ## Compatibilidad
 
@@ -110,7 +138,7 @@ Comprobar que los módulos importan correctamente:
 bun run check
 ```
 
-Instalar plugins y agents localmente desde el repo:
+Instalar plugins, agents y commands localmente desde el repo:
 
 ```sh
 bun run install:local
@@ -126,6 +154,12 @@ rm ~/.config/opencode/tui-plugins/status-title.js
 rm ~/.config/opencode/agents/ask.md
 rm ~/.config/opencode/agents/fast.md
 rm ~/.config/opencode/agents/design.md
+rm ~/.config/opencode/commands/clean-code.md
+rm ~/.config/opencode/commands/safe-commit.md
+rm ~/.config/opencode/commands/ready-pr.md
+rm ~/.config/opencode/commands/branch.md
+rm ~/.config/opencode/bin/opencode-branch
+rm ~/.config/opencode/bin/opencode-branch-open
 ```
 
 Después quita `"./tui-plugins/status-title.js"` de `~/.config/opencode/tui.json` y reinicia OpenCode.
