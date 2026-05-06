@@ -1,0 +1,10 @@
+{
+  "name": "opencode-status-plugins",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "bun -e \"await import('./plugins/tui/status-title.js'); await import('./plugins/server/session-notifications.js'); console.log('plugin imports ok')\"",
+    "install:local": "bash scripts/install.sh"
+  }
+}
