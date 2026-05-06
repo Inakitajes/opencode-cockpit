@@ -48,6 +48,21 @@ function addAttention(map, sessionID, key) {
   map.set(sessionID, current)
 }
 
+function addChild(map, parentID, childID) {
+  if (!parentID || !childID) return
+  const current = map.get(parentID) ?? new Set()
+  current.add(childID)
+  map.set(parentID, current)
+}
+
+function removeChild(map, parentID, childID) {
+  if (!parentID || !childID) return
+  const current = map.get(parentID)
+  if (!current) return
+  current.delete(childID)
+  if (current.size === 0) map.delete(parentID)
+}
+
 function removeAttention(map, sessionID, key) {
   if (!sessionID || !key) return
   const current = map.get(sessionID)
@@ -66,6 +81,9 @@ function pendingCount(api, sessionID) {
 
 const tui = async (api) => {
   const titles = new Map()
+  const parents = new Map()
+  const children = new Map()
+  const knownStatus = new Map()
   const loadingTitles = new Set()
   const attention = new Map()
   const errored = new Set()
@@ -76,8 +94,18 @@ const tui = async (api) => {
   function rememberTitle(info, fallbackID) {
     const id = info?.id ?? fallbackID
     const title = titleFromInfo(info)
-    if (!id || !title) return
-    titles.set(id, title)
+    if (!id) return
+    if (title) titles.set(id, title)
+    if (info && "parentID" in info) {
+      const previousParent = parents.get(id)
+      if (previousParent && previousParent !== info.parentID) removeChild(children, previousParent, id)
+      if (info.parentID) {
+        parents.set(id, info.parentID)
+        addChild(children, info.parentID, id)
+      } else {
+        parents.delete(id)
+      }
+    }
   }
 
   async function loadTitle(sessionID) {
@@ -106,12 +134,38 @@ const tui = async (api) => {
 
   function stateFor(sessionID) {
     const status = api.state.session.status(sessionID)
-    if (errored.has(sessionID) || (attention.get(sessionID)?.size ?? 0) > 0 || pendingCount(api, sessionID) > 0) {
+    if (hasAttention(sessionID)) {
       return "attention"
     }
-    if (status?.type === "busy") return "busy"
-    if (status?.type === "retry") return "attention"
+    if (status?.type === "retry" || hasChildState(sessionID, "retry")) return "attention"
+    if (status?.type === "busy" || hasChildState(sessionID, "busy")) return "busy"
     return "idle"
+  }
+
+  function hasAttention(sessionID, seen = new Set()) {
+    if (!sessionID || seen.has(sessionID)) return false
+    seen.add(sessionID)
+
+    if (errored.has(sessionID) || (attention.get(sessionID)?.size ?? 0) > 0 || pendingCount(api, sessionID) > 0) {
+      return true
+    }
+
+    for (const childID of children.get(sessionID) ?? []) {
+      if (hasAttention(childID, seen)) return true
+    }
+    return false
+  }
+
+  function hasChildState(sessionID, type, seen = new Set()) {
+    if (!sessionID || seen.has(sessionID)) return false
+    seen.add(sessionID)
+
+    for (const childID of children.get(sessionID) ?? []) {
+      const childStatus = api.state.session.status(childID)?.type ?? knownStatus.get(childID)
+      if (childStatus === type) return true
+      if (hasChildState(childID, type, seen)) return true
+    }
+    return false
   }
 
   function setTitle() {
@@ -158,6 +212,11 @@ const tui = async (api) => {
     const sessionID = eventSessionID(event)
     if (sessionID) {
       titles.delete(sessionID)
+      const parentID = parents.get(sessionID)
+      removeChild(children, parentID, sessionID)
+      parents.delete(sessionID)
+      children.delete(sessionID)
+      knownStatus.delete(sessionID)
       attention.delete(sessionID)
       errored.delete(sessionID)
     }
@@ -166,7 +225,14 @@ const tui = async (api) => {
 
   api.event.on("session.status", (event) => {
     const sessionID = event.properties.sessionID
-    if (event.properties.status.type === "busy") errored.delete(sessionID)
+    const status = event.properties.status.type
+    knownStatus.set(sessionID, status)
+    if (status === "busy") errored.delete(sessionID)
+    scheduleTitleUpdate()
+  })
+
+  api.event.on("session.idle", (event) => {
+    knownStatus.set(event.properties.sessionID, "idle")
     scheduleTitleUpdate()
   })
 

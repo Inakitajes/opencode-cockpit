@@ -87,6 +87,7 @@ function errorMessage(error) {
 
 export const SessionNotifications = async ({ client, directory }) => {
   const titles = new Map()
+  const parents = new Map()
   const status = new Map()
   const lastDone = new Map()
   const lastAttention = new Map()
@@ -94,12 +95,16 @@ export const SessionNotifications = async ({ client, directory }) => {
   function remember(info, fallbackID) {
     const id = info?.id ?? fallbackID
     const title = titleFromInfo(info)
-    if (!id || !title) return
-    titles.set(id, title)
+    if (!id) return
+    if (title) titles.set(id, title)
+    if (info && "parentID" in info) {
+      if (info.parentID) parents.set(id, info.parentID)
+      else parents.delete(id)
+    }
   }
 
-  async function fetchTitle(sessionID) {
-    if (!sessionID || titles.has(sessionID)) return titles.get(sessionID)
+  async function fetchSessionInfo(sessionID) {
+    if (!sessionID) return
 
     const attempts = [
       () => client.session.get({ path: { id: sessionID } }),
@@ -109,15 +114,18 @@ export const SessionNotifications = async ({ client, directory }) => {
     for (const attempt of attempts) {
       try {
         const result = await attempt()
-        const title = titleFromInfo(result?.data)
-        if (title) {
-          titles.set(sessionID, title)
-          return title
-        }
+        remember(result?.data, sessionID)
+        if (titles.has(sessionID) || parents.has(sessionID)) return result?.data
       } catch {
         // Try the next SDK call shape.
       }
     }
+  }
+
+  async function fetchTitle(sessionID) {
+    if (!sessionID || titles.has(sessionID)) return titles.get(sessionID)
+    await fetchSessionInfo(sessionID)
+    return titles.get(sessionID)
   }
 
   async function sessionLabel(sessionID) {
@@ -126,7 +134,9 @@ export const SessionNotifications = async ({ client, directory }) => {
     return compact(`${basename(directory)} ${sessionID.slice(0, 8)}`)
   }
 
-  function shouldNotifyDone(sessionID, previous, next) {
+  async function shouldNotifyDone(sessionID, previous, next) {
+    if (!parents.has(sessionID)) await fetchSessionInfo(sessionID)
+    if (parents.has(sessionID)) return false
     if (next !== "idle") return false
     if (previous !== "busy" && previous !== "retry") return false
 
@@ -169,6 +179,7 @@ export const SessionNotifications = async ({ client, directory }) => {
           const sessionID = eventSessionID(event)
           if (sessionID) {
             titles.delete(sessionID)
+            parents.delete(sessionID)
             status.delete(sessionID)
             lastDone.delete(sessionID)
           }
@@ -181,7 +192,7 @@ export const SessionNotifications = async ({ client, directory }) => {
           const previous = status.get(sessionID)
           status.set(sessionID, next)
 
-          if (shouldNotifyDone(sessionID, previous, next)) await notifyDone(sessionID)
+          if (await shouldNotifyDone(sessionID, previous, next)) await notifyDone(sessionID)
           break
         }
 
@@ -190,7 +201,7 @@ export const SessionNotifications = async ({ client, directory }) => {
           const previous = status.get(sessionID)
           status.set(sessionID, "idle")
 
-          if (shouldNotifyDone(sessionID, previous, "idle")) await notifyDone(sessionID)
+          if (await shouldNotifyDone(sessionID, previous, "idle")) await notifyDone(sessionID)
           break
         }
 
