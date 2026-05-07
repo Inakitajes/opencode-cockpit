@@ -30,6 +30,25 @@ exec $(printf '%q' "$OPENCODE_BIN") --prompt "\$PROMPT"
 EOF
 chmod +x "$BOOTSTRAP"
 
+DEFAULT_SHELL="${OPENCODE_BRANCH_SHELL:-${SHELL:-/bin/bash}}"
+if [ ! -x "$DEFAULT_SHELL" ]; then
+  DEFAULT_SHELL="/bin/bash"
+fi
+
+SHELL_COMMAND="exec $(printf '%q' "$BOOTSTRAP")"
+case "$(basename "$DEFAULT_SHELL")" in
+  bash|zsh|ksh|sh)
+    LAUNCH_COMMAND="$(printf '%q' "$DEFAULT_SHELL") -lic $(printf '%q' "$SHELL_COMMAND")"
+    ;;
+  fish)
+    LAUNCH_COMMAND="$(printf '%q' "$DEFAULT_SHELL") -l -i -c $(printf '%q' "$SHELL_COMMAND")"
+    ;;
+  *)
+    DEFAULT_SHELL="/bin/bash"
+    LAUNCH_COMMAND="$(printf '%q' "$DEFAULT_SHELL") -lic $(printf '%q' "$SHELL_COMMAND")"
+    ;;
+esac
+
 open_ghostty_tab() {
   osascript \
     -e 'on run argv' \
@@ -46,11 +65,18 @@ open_ghostty_tab() {
     -e 'activate' \
     -e 'end tell' \
     -e 'end run' \
-    "$WORKTREE_DIR" "/bin/bash $BOOTSTRAP"
+    "$WORKTREE_DIR" "$LAUNCH_COMMAND"
 }
 
 open_ghostty_window() {
-  /usr/bin/open -na Ghostty --args --working-directory="$WORKTREE_DIR" -e /bin/bash "$BOOTSTRAP"
+  case "$(basename "$DEFAULT_SHELL")" in
+    fish)
+      /usr/bin/open -na Ghostty --args --working-directory="$WORKTREE_DIR" -e "$DEFAULT_SHELL" -l -i -c "$SHELL_COMMAND"
+      ;;
+    *)
+      /usr/bin/open -na Ghostty --args --working-directory="$WORKTREE_DIR" -e "$DEFAULT_SHELL" -lic "$SHELL_COMMAND"
+      ;;
+  esac
 }
 
 if [ "$(uname -s)" = "Darwin" ] && command -v osascript >/dev/null 2>&1; then
@@ -64,7 +90,7 @@ if [ "$(uname -s)" = "Darwin" ] && command -v osascript >/dev/null 2>&1; then
     exit 0
   fi
 
-  CMD="/bin/bash $(printf '%q' "$BOOTSTRAP")"
+  CMD="$LAUNCH_COMMAND"
   ESCAPED_CMD="${CMD//\\/\\\\}"
   ESCAPED_CMD="${ESCAPED_CMD//\"/\\\"}"
   osascript -e 'tell application "Terminal" to activate' -e "tell application \"Terminal\" to do script \"$ESCAPED_CMD\""
