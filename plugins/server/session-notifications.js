@@ -2,6 +2,8 @@ const DEFAULT_TITLE = /^(New session - |Child session - )\d{4}-\d{2}-\d{2}T\d{2}
 const DONE_THROTTLE_MS = 3000
 const ATTENTION_THROTTLE_MS = 10000
 const GHOSTTY_APP_ID = "com.mitchellh.ghostty"
+const OSC = "\u001b]"
+const ST = "\u001b\\"
 
 function clean(value, fallback) {
   const text = String(value ?? "")
@@ -25,6 +27,36 @@ function appleString(value) {
   return `"${String(value).replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`
 }
 
+function terminalText(value) {
+  return String(value ?? "")
+    .replace(/[\u0000-\u001f\u007f]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+}
+
+function isGhosttyTerminal() {
+  return (
+    process.env.TERM_PROGRAM === "ghostty" ||
+    process.env.TERM === "xterm-ghostty" ||
+    Boolean(process.env.GHOSTTY_RESOURCES_DIR)
+  )
+}
+
+function notifyGhostty(title, message) {
+  if (!isGhosttyTerminal()) return false
+  if (!process.stdout?.isTTY || typeof process.stdout.write !== "function") return false
+  if (process.env.OPENCODE_DISABLE_GHOSTTY_NOTIFICATIONS) return false
+
+  try {
+    const text = compact(terminalText(`${title}: ${message}`), 180)
+    if (!text) return false
+    process.stdout.write(`${OSC}9;${text}${ST}`)
+    return true
+  } catch {
+    return false
+  }
+}
+
 async function runAppleScript(lines) {
   if (process.platform !== "darwin") return
   if (typeof Bun === "undefined" || typeof Bun.spawn !== "function") return
@@ -45,6 +77,8 @@ async function runAppleScript(lines) {
 
 async function notify(title, message) {
   if (process.platform !== "darwin") return
+
+  if (notifyGhostty(title, message)) return
 
   const sentByGhostty = await runAppleScript([
     `tell application id ${appleString(GHOSTTY_APP_ID)}`,

@@ -9,7 +9,7 @@ Local OpenCode customizations: plugins, agents, commands, scripts, and config sn
 - `agents/*.md`: versioned global custom agents.
 - `commands/*.md`: versioned global custom slash commands.
 - `scripts/bin/*`: local helpers for integrations like Worktrunk.
-- `raycast/prompt-stash`: Raycast extension for keeping future prompts outside the agentic loop and pasting them manually when needed.
+- `raycast/prompt-stash`: Raycast extension that manages a Prompt Stash: a FIFO queue for future prompts that should stay outside the OpenCode agent loop until you explicitly paste them.
 - `docs/agents.md`: documentation for the included agents.
 - `docs/commands.md`: documentation for the included commands.
 - `docs/stack.md`: documentation for the local programming stack.
@@ -34,6 +34,7 @@ The local programming stack is built around OpenCode, Worktrunk (`wt`), and Ghos
 - OpenCode as the cockpit for agents, commands, and plugins.
 - Worktrunk for creating isolated branches/worktrees from plans with `/branch`.
 - Ghostty as the main terminal for running OpenCode sessions.
+- Raycast Prompt Stash as an out-of-band prompt queue for capturing follow-up prompts while OpenCode is still working. It avoids sending those prompts into the current agentic loop until you intentionally pop one into the focused input.
 
 See `docs/stack.md` for workflow details and repository boundaries.
 
@@ -57,7 +58,7 @@ See `docs/commands.md` for usage and argument details.
 
 ## Notifications
 
-On macOS, the server plugin uses `osascript` to show local notifications. It first tries to emit them from Ghostty so clicking returns to the terminal; if that fails, it falls back to generic AppleScript:
+On macOS, the server plugin shows local notifications. When running inside Ghostty, it first attempts Ghostty's native OSC 9 desktop notification sequence (`ESC ] 9 ; text ESC \`). This only works if the plugin output reaches the real Ghostty PTY; if OpenCode captures that output or the sequence is unavailable, it falls back to `osascript`:
 
 - `OpenCode 🟢`: the session has finished.
 - `OpenCode 🔴`: the session needs attention.
@@ -134,7 +135,7 @@ If you already have a `tui.json`, add `"./tui-plugins/status-title.js"` to the e
 - Does not use third-party npm packages.
 - Does not execute remote code.
 - The server plugin runs `osascript` with `Bun.spawn([...])`, passing arguments as an array and escaping notification text.
-- On macOS, it tries to send notifications from Ghostty (`com.mitchellh.ghostty`) before falling back to generic AppleScript.
+- On macOS, it tries Ghostty OSC 9 desktop notifications before falling back to `osascript`. If the OSC sequence cannot reach Ghostty's PTY, macOS may show the fallback notification as AppleScript.
 - The TUI plugin only uses the local OpenCode API to read session state and update the terminal title.
 - Agents are local OpenCode Markdown configuration files.
 - Commands are local OpenCode Markdown configuration files.

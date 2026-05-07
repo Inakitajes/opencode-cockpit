@@ -1,6 +1,6 @@
 # Prompt Stash
 
-Raycast extension for keeping future OpenCode prompts outside the agentic loop.
+Raycast extension that manages a Prompt Stash: a FIFO queue for future OpenCode prompts that should stay outside the agentic loop until you explicitly paste them.
 
 ## Commands
 
@@ -14,6 +14,7 @@ Raycast extension for keeping future OpenCode prompts outside the agentic loop.
 - Used prompts are archived automatically.
 - The archive keeps at most the 30 most recent used prompts.
 - Persistence uses Raycast `LocalStorage`, shared by the extension commands.
+- The extension is intentionally out-of-band: adding a prompt never sends a message to OpenCode. A prompt only reaches OpenCode when you focus its input and run `Pop Prompt` or paste a specific item from `Manage Prompts`.
 
 ## Local Install
 
