@@ -60,6 +60,10 @@ Requirements:
 - The installer copies helper scripts to `~/.config/opencode/bin/`.
 - On macOS, the helper opens a new Ghostty tab in the front window when possible, falls back to a new Ghostty window, then Terminal. Other systems print the command to run manually.
 
+## Recommended
+
+I recommend using RTK to save tokens when working with these tools. It is optional, but useful for reducing token usage in larger workflows. See <https://github.com/rtk-ai/rtk>.
+
 ## `/push`
 
 Use this when the current work is ready to commit and push. It asks OpenCode to inspect the diff, run relevant tests/checks when available, create a conventional commit, and push the current branch.

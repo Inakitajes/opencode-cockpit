@@ -82,6 +82,12 @@ The `/branch` command requires Worktrunk (`wt`). Recommended installation:
 brew install worktrunk && wt config shell install
 ```
 
+## Recommended
+
+I recommend using RTK to save tokens when working with these tools. It is optional, but useful for reducing token usage in larger workflows.
+
+Install RTK from <https://github.com/rtk-ai/rtk>.
+
 ## Manual Install
 
 1. Create the global folders.
