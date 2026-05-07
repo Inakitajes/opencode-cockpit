@@ -1,121 +1,122 @@
 # OpenCode Cockpit
 
-Customizaciones locales para OpenCode: plugins, agents, commands, scripts y snippets de configuración para mejorar el flujo diario.
+Local OpenCode customizations: plugins, agents, commands, scripts, and config snippets to improve the daily workflow.
 
-## Qué Incluye
+## What's Included
 
-- `plugins/tui/status-title.js`: plugin TUI que cambia el título de la pestaña/ventana del terminal.
-- `plugins/server/session-notifications.js`: plugin server que envía notificaciones locales de macOS.
-- `agents/*.md`: custom agents globales versionados.
-- `commands/*.md`: custom slash commands globales versionados.
-- `scripts/bin/*`: helpers locales para integraciones como Worktrunk.
-- `docs/agents.md`: documentación de los agents incluidos.
-- `docs/commands.md`: documentación de los commands incluidos.
-- `docs/stack.md`: documentación del stack local de programación.
-- `scripts/install.sh`: instalador local que copia plugins, agents y commands a `~/.config/opencode`, y registra el plugin TUI.
-- `config/tui.json`: ejemplo mínimo de configuración TUI.
+- `plugins/tui/status-title.js`: TUI plugin that updates the terminal tab/window title.
+- `plugins/server/session-notifications.js`: server plugin that sends local macOS notifications.
+- `agents/*.md`: versioned global custom agents.
+- `commands/*.md`: versioned global custom slash commands.
+- `scripts/bin/*`: local helpers for integrations like Worktrunk.
+- `raycast/prompt-stash`: Raycast extension for keeping future prompts outside the agentic loop and pasting them manually when needed.
+- `docs/agents.md`: documentation for the included agents.
+- `docs/commands.md`: documentation for the included commands.
+- `docs/stack.md`: documentation for the local programming stack.
+- `scripts/install.sh`: local installer that copies plugins, agents, and commands to `~/.config/opencode`, and registers the TUI plugin.
+- `config/tui.json`: minimal TUI config example.
 
 ## Agents
 
-Este repo incluye una copia versionada de tus custom agents globales:
+This repo includes a versioned copy of your global custom agents:
 
-- `ask`: agente read-only para investigación, exploración de código y web research.
-- `plan`: agente primario read-only para planificación, análisis y auditorías.
-- `fast`: agente full-access rápido usando Kimi K2.6 en OpenRouter.
-- `design`: especialista UI/UX usando Claude Opus 4.7 en Anthropic.
+- `ask`: read-only agent for research, codebase exploration, and web research.
+- `plan`: primary read-only agent for planning, analysis, and audits.
+- `fast`: fast full-access agent using Kimi K2.6 on OpenRouter.
+- `design`: UI/UX specialist using Claude Opus 4.7 on Anthropic.
 
-Ver `docs/agents.md` para detalles de modelos, permisos y uso recomendado.
+See `docs/agents.md` for model, permission, and usage details.
 
 ## Stack
 
-Mi stack local de programación se apoya en OpenCode, Worktrunk (`wt`) y Ghostty:
+The local programming stack is built around OpenCode, Worktrunk (`wt`), and Ghostty:
 
-- OpenCode como cockpit de agentes, commands y plugins.
-- Worktrunk para crear ramas/worktrees aislados desde planes con `/branch`.
-- Ghostty como terminal principal para ejecutar las sesiones de OpenCode.
+- OpenCode as the cockpit for agents, commands, and plugins.
+- Worktrunk for creating isolated branches/worktrees from plans with `/branch`.
+- Ghostty as the main terminal for running OpenCode sessions.
 
-Ver `docs/stack.md` para detalles del flujo y los límites de este repo.
+See `docs/stack.md` for workflow details and repository boundaries.
 
 ## Commands
 
-Este repo incluye custom commands globales:
+This repo includes global custom commands:
 
-- `/clean-code`: auditoría read-only de arquitectura, mantenibilidad, SRP, SOLID y code smells.
-- `/audit`: auditoría de seguridad read-only de la PR actual o del repositorio completo usando el agente `plan`.
-- `/branch`: crea un worktree con Worktrunk desde el plan actual y abre una sesión limpia de OpenCode allí.
-- `/push`: ejecuta tests/checks relevantes, crea un commit convencional y hace push.
-- `/ship`: prepara la rama, hace push, abre o reutiliza una PR y verifica checks.
+- `/clean-code`: read-only audit for architecture, maintainability, SRP, SOLID, and code smells.
+- `/audit`: read-only security audit for the current PR or full repository using the `plan` agent.
+- `/branch`: creates a Worktrunk worktree from the current plan and opens a clean OpenCode session there.
+- `/push`: runs relevant tests/checks, creates a conventional commit, and pushes.
+- `/ship`: prepares the branch, pushes, opens or reuses a PR, and verifies checks.
 
-Ver `docs/commands.md` para detalles de uso y argumentos.
+See `docs/commands.md` for usage and argument details.
 
-## Estados
+## Status
 
-- `🟡 | sesión`: OpenCode está trabajando.
-- `🟢 | sesión`: la sesión está idle o ha terminado.
-- `🔴 | sesión`: la sesión requiere atención, está reintentando o tuvo un error.
+- `🟡 | session`: OpenCode is working.
+- `🟢 | session`: the session is idle or finished.
+- `🔴 | session`: the session needs attention, is retrying, or hit an error.
 
-## Notificaciones
+## Notifications
 
-En macOS el plugin server usa `osascript` para mostrar notificaciones locales. Primero intenta emitirlas desde Ghostty para que el click vuelva al terminal; si falla, usa el contexto genérico de AppleScript:
+On macOS, the server plugin uses `osascript` to show local notifications. It first tries to emit them from Ghostty so clicking returns to the terminal; if that fails, it falls back to generic AppleScript:
 
-- `OpenCode 🟢`: la sesión ha terminado.
-- `OpenCode 🔴`: la sesión requiere atención.
-- `OpenCode 🔴`: la sesión tuvo un error.
+- `OpenCode 🟢`: the session has finished.
+- `OpenCode 🔴`: the session needs attention.
+- `OpenCode 🔴`: the session hit an error.
 
-Las notificaciones son best effort. Si macOS las bloquea, OpenCode seguirá funcionando.
+Notifications are best effort. If macOS blocks them, OpenCode will keep working.
 
-## Instalación Rápida
+## Quick Install
 
-Desde la raíz de este repositorio:
+From the repository root:
 
 ```sh
 bash scripts/install.sh
 ```
 
-Después reinicia las pestañas de OpenCode. Los plugins, agents y commands se cargan al arrancar.
+Then restart your OpenCode tabs. Plugins, agents, and commands are loaded on startup.
 
-El comando `/branch` requiere Worktrunk (`wt`). Instalación recomendada:
+The `/branch` command requires Worktrunk (`wt`). Recommended installation:
 
 ```sh
 brew install worktrunk && wt config shell install
 ```
 
-## Instalación Manual
+## Manual Install
 
-1. Crea las carpetas globales.
+1. Create the global folders.
 
 ```sh
 mkdir -p ~/.config/opencode/plugins ~/.config/opencode/tui-plugins ~/.config/opencode/agents ~/.config/opencode/commands
 ```
 
-2. Copia el plugin server.
+2. Copy the server plugin.
 
 ```sh
 cp plugins/server/session-notifications.js ~/.config/opencode/plugins/session-notifications.js
 ```
 
-3. Copia el plugin TUI.
+3. Copy the TUI plugin.
 
 ```sh
 cp plugins/tui/status-title.js ~/.config/opencode/tui-plugins/status-title.js
 ```
 
-4. Copia los agents.
+4. Copy the agents.
 
 ```sh
 cp agents/*.md ~/.config/opencode/agents/
 ```
 
-5. Copia los commands.
+5. Copy the commands.
 
 ```sh
 cp commands/*.md ~/.config/opencode/commands/
 rm -f ~/.config/opencode/commands/safe-commit.md ~/.config/opencode/commands/ready-pr.md
 ```
 
-6. Registra el plugin TUI en `~/.config/opencode/tui.json`.
+6. Register the TUI plugin in `~/.config/opencode/tui.json`.
 
-Si no tienes `tui.json`, puedes usar:
+If you do not have a `tui.json`, you can use:
 
 ```json
 {
@@ -124,44 +125,60 @@ Si no tienes `tui.json`, puedes usar:
 }
 ```
 
-Si ya tienes un `tui.json`, añade `"./tui-plugins/status-title.js"` al array `plugin` existente.
+If you already have a `tui.json`, add `"./tui-plugins/status-title.js"` to the existing `plugin` array.
 
-7. Reinicia OpenCode.
+7. Restart OpenCode.
 
-## Seguridad
+## Security
 
-- No usa paquetes npm de terceros.
-- No ejecuta código remoto.
-- El plugin server ejecuta `osascript` con `Bun.spawn([...])`, pasando los argumentos como array y escapando el texto de la notificación.
-- En macOS intenta enviar notificaciones desde Ghostty (`com.mitchellh.ghostty`) antes de usar AppleScript genérico.
-- El plugin TUI solo usa la API local de OpenCode para leer estado de sesiones y actualizar el título del terminal.
-- Los agents son archivos Markdown de configuración local de OpenCode.
-- Los commands son archivos Markdown de configuración local de OpenCode.
-- Los helpers se instalan en `~/.config/opencode/bin` y no ejecutan código remoto.
+- Does not use third-party npm packages.
+- Does not execute remote code.
+- The server plugin runs `osascript` with `Bun.spawn([...])`, passing arguments as an array and escaping notification text.
+- On macOS, it tries to send notifications from Ghostty (`com.mitchellh.ghostty`) before falling back to generic AppleScript.
+- The TUI plugin only uses the local OpenCode API to read session state and update the terminal title.
+- Agents are local OpenCode Markdown configuration files.
+- Commands are local OpenCode Markdown configuration files.
+- Helpers are installed into `~/.config/opencode/bin` and do not execute remote code.
 
-## Compatibilidad
+## Compatibility
 
-- Probado con OpenCode `1.14.39`.
-- El cambio de título depende de que tu terminal respete `OSC 0`/`setTerminalTitle`.
-- Las notificaciones incluidas son para macOS. En otros sistemas el plugin simplemente no envía notificaciones.
+- Tested with OpenCode `1.14.39`.
+- Title updates depend on your terminal supporting `OSC 0`/`setTerminalTitle`.
+- The included notifications are for macOS. On other systems, the plugin simply does not send notifications.
 
-## Desarrollo
+## Development
 
-Comprobar que los módulos importan correctamente:
+Check that modules import correctly:
 
 ```sh
 bun run check
 ```
 
-Instalar plugins, agents y commands localmente desde el repo:
+Develop the Raycast Prompt Stash extension:
+
+```sh
+cd raycast/prompt-stash
+npm install
+npm run dev
+```
+
+`npm run dev` registers the extension locally in Raycast. Once the `Add Prompt`, `Pop Prompt`, and `Manage Prompts` commands appear, you can stop the process with `Ctrl+C`; the extension will remain available in Raycast. Run `npm run dev` again after changing the code.
+
+Then assign hotkeys from Raycast Preferences > Extensions > Prompt Stash. Recommended usage:
+
+- `Add Prompt`: opens a form to save a future prompt.
+- `Pop Prompt`: pastes the oldest prompt into the active app and archives it.
+- `Manage Prompts`: lets you view the queue and history, paste a specific prompt, restore archived prompts, or delete items.
+
+Install plugins, agents, and commands locally from the repo:
 
 ```sh
 bun run install:local
 ```
 
-## Desinstalación
+## Uninstall
 
-Elimina estos archivos:
+Remove these files:
 
 ```sh
 rm ~/.config/opencode/plugins/session-notifications.js
@@ -177,4 +194,4 @@ rm ~/.config/opencode/bin/opencode-branch
 rm ~/.config/opencode/bin/opencode-branch-open
 ```
 
-Después quita `"./tui-plugins/status-title.js"` de `~/.config/opencode/tui.json` y reinicia OpenCode.
+Then remove `"./tui-plugins/status-title.js"` from `~/.config/opencode/tui.json` and restart OpenCode.

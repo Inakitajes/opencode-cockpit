@@ -1,0 +1,68 @@
+{
+  "name": "prompt-stash",
+  "title": "Prompt Stash",
+  "description": "Keep a FIFO stash of prompts and paste them into OpenCode when you decide.",
+  "icon": "icon.png",
+  "author": "Inakitajes",
+  "platforms": [
+    "macOS"
+  ],
+  "categories": [
+    "Productivity",
+    "Developer Tools"
+  ],
+  "license": "MIT",
+  "commands": [
+    {
+      "name": "add-prompt",
+      "title": "Add Prompt",
+      "description": "Add a prompt to the FIFO stash.",
+      "mode": "view",
+      "keywords": [
+        "queue",
+        "stash",
+        "opencode"
+      ]
+    },
+    {
+      "name": "pop-prompt",
+      "title": "Pop Prompt",
+      "description": "Paste the oldest stashed prompt into the frontmost app and archive it.",
+      "mode": "no-view",
+      "keywords": [
+        "queue",
+        "stash",
+        "paste",
+        "opencode"
+      ]
+    },
+    {
+      "name": "manage-prompts",
+      "title": "Manage Prompts",
+      "description": "View, paste, restore, and delete stashed prompts.",
+      "mode": "view",
+      "keywords": [
+        "queue",
+        "stash",
+        "history",
+        "opencode"
+      ]
+    }
+  ],
+  "dependencies": {
+    "@raycast/api": "latest"
+  },
+  "devDependencies": {
+    "@raycast/eslint-config": "^2.1.1",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "eslint": "^9.39.4",
+    "prettier": "^3.8.3",
+    "typescript": "latest"
+  },
+  "scripts": {
+    "dev": "ray develop",
+    "build": "ray build",
+    "lint": "ray lint"
+  }
+}
