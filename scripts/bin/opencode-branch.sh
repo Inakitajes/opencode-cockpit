@@ -97,7 +97,8 @@ if ! git check-ref-format --branch "$BRANCH" >/dev/null 2>&1; then
   exit 2
 fi
 
-PLAN_DIR="${TMPDIR:-/tmp}/opencode-cockpit"
+CONFIG_DIR="${OPENCODE_CONFIG_DIR:-${HOME}/.config/opencode}"
+PLAN_DIR="${OPENCODE_COCKPIT_TMPDIR:-${CONFIG_DIR}/tmp/opencode-cockpit}"
 mkdir -p "$PLAN_DIR"
 PLAN_FILE="$(mktemp "$PLAN_DIR/branch-plan.XXXXXX.md")"
 cat > "$PLAN_FILE"

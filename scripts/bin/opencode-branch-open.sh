@@ -3,23 +3,30 @@ set -euo pipefail
 
 PLAN_FILE="${1:-}"
 WORKTREE_DIR="$(pwd)"
+CONFIG_DIR="${OPENCODE_CONFIG_DIR:-${HOME}/.config/opencode}"
+BOOTSTRAP_DIR="${OPENCODE_COCKPIT_TMPDIR:-${CONFIG_DIR}/tmp/opencode-cockpit}"
 
 if [ -z "$PLAN_FILE" ] || [ ! -f "$PLAN_FILE" ]; then
   printf 'Plan file not found: %s\n' "$PLAN_FILE" >&2
   exit 2
 fi
 
-if ! command -v opencode >/dev/null 2>&1; then
+OPENCODE_BIN="$(command -v opencode || true)"
+if [ -z "$OPENCODE_BIN" ]; then
   printf 'opencode was not found in PATH.\n' >&2
   exit 127
 fi
 
-BOOTSTRAP="$(mktemp "${TMPDIR:-/tmp}/opencode-cockpit-open.XXXXXX.sh")"
+mkdir -p "$BOOTSTRAP_DIR"
+BOOTSTRAP="$(mktemp "$BOOTSTRAP_DIR/opencode-cockpit-open.XXXXXX.sh")"
 cat > "$BOOTSTRAP" <<EOF
 #!/usr/bin/env bash
 set -euo pipefail
+PLAN_FILE=$(printf '%q' "$PLAN_FILE")
+PROMPT="\$(cat "\$PLAN_FILE")"
+rm -f "\$PLAN_FILE" $(printf '%q' "$BOOTSTRAP")
 cd $(printf '%q' "$WORKTREE_DIR")
-exec opencode --prompt "\$(cat $(printf '%q' "$PLAN_FILE"))"
+exec $(printf '%q' "$OPENCODE_BIN") --prompt "\$PROMPT"
 EOF
 chmod +x "$BOOTSTRAP"
 

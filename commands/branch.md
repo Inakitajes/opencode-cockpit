@@ -14,6 +14,8 @@ Rules:
 - Do not use plain `git worktree` unless the user explicitly asks for a fallback.
 - Do not modify project files in the current worktree.
 - Do not commit anything.
+- Do not run `opencode` directly from the current session. The helper is responsible for opening a separate terminal tab/window.
+- If the helper prints a manual command to run, report it to the user; do not execute that command inside this agent session.
 - If there is no clear plan in the conversation, ask for the missing plan before creating the worktree.
 - If the current repository has uncommitted changes, warn briefly and ask whether to continue from the current HEAD or stop.
 
