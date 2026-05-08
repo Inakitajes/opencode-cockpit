@@ -7,7 +7,7 @@ This repo keeps a versioned copy of the global OpenCode agents stored in `~/.con
 | Agent | Model | Mode | Purpose |
 | --- | --- | --- | --- |
 | `plan` | Current/default model | `primary` | Read-only planning, analysis, and audit reports. |
-| `ask` | `fireworks-ai/accounts/fireworks/routers/kimi-k2p5-turbo` | `all` | Read-only investigation, explanation, codebase exploration, and web research. |
+| `ask` | `openrouter/z-ai/glm-4.7` with throughput routing | `all` | Read-only investigation, explanation, codebase exploration, and web research. |
 | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | `primary` | Full-access fast implementation agent for day-to-day work, not available for subagent delegation. |
 | `design` | `anthropic/claude-opus-4-7` | `primary` | UI/UX specialist for design-system-aware frontend work. |
 

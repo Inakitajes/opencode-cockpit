@@ -1,7 +1,7 @@
 ---
 description: Read-only research and exploration agent with web access
 mode: all
-model: fireworks-ai/accounts/fireworks/routers/kimi-k2p5-turbo
+model: openrouter/z-ai/glm-4.7
 permission:
   edit: deny
   bash: deny
