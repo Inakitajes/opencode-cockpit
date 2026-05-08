@@ -22,7 +22,7 @@ This repo includes a versioned copy of your global custom agents:
 
 - `ask`: read-only agent for research, codebase exploration, and web research.
 - `plan`: primary read-only agent for planning, analysis, and audits.
-- `fast`: fast full-access agent using Kimi K2.6 on OpenRouter.
+- `fast`: fast full-access primary agent using GLM 4.7 on OpenRouter Nitro; not available as a subagent.
 - `design`: UI/UX specialist using Claude Opus 4.7 on Anthropic.
 
 See `docs/agents.md` for model, permission, and usage details.
