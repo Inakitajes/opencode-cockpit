@@ -22,6 +22,7 @@ TUI_JSON="${CONFIG_DIR}/tui.json"
 TUI_ENTRY="./tui-plugins/status-title.js"
 OPENCODE_JSON="${CONFIG_DIR}/opencode.json"
 OPENCODE_PLUGIN_ENTRY="@warp-dot-dev/opencode-warp"
+RTK_TEE_PATH="~/Library/Application Support/rtk/tee/**"
 STAMP="$(date +%Y%m%d%H%M%S)"
 
 mkdir -p "${SERVER_PLUGIN_DIR}" "${TUI_PLUGIN_DIR}" "${AGENTS_TARGET_DIR}" "${COMMANDS_TARGET_DIR}" "${BIN_TARGET_DIR}"
@@ -115,11 +116,12 @@ else
 fi
 
 if command -v node >/dev/null 2>&1; then
-  node - "${OPENCODE_JSON}" "${OPENCODE_PLUGIN_ENTRY}" <<'NODE'
+  node - "${OPENCODE_JSON}" "${OPENCODE_PLUGIN_ENTRY}" "${RTK_TEE_PATH}" <<'NODE'
 const fs = require("fs")
 
 const file = process.argv[2]
 const pluginEntry = process.argv[3]
+const rtkTeePath = process.argv[4]
 const schema = "https://opencode.ai/config.json"
 
 let config = { $schema: schema }
@@ -140,6 +142,9 @@ if (fs.existsSync(file)) {
 if (!config || typeof config !== "object" || Array.isArray(config)) config = { $schema: schema }
 if (!config.$schema) config.$schema = schema
 if (!Array.isArray(config.plugin)) config.plugin = []
+config.permission ??= {}
+config.permission.external_directory ??= {}
+config.permission.edit ??= {}
 config.provider ??= {}
 config.provider.openrouter ??= {}
 config.provider.openrouter.models ??= {}
@@ -149,9 +154,13 @@ config.provider.openrouter.models["z-ai/glm-4.7"].options.provider ??= {}
 
 const provider = config.provider.openrouter.models["z-ai/glm-4.7"].options.provider
 const pluginExists = config.plugin.some((item) => item === pluginEntry || (Array.isArray(item) && item[0] === pluginEntry))
-const changed = provider.sort !== "throughput" || !pluginExists
+const changed = provider.sort !== "throughput" || !pluginExists ||
+  config.permission.external_directory[rtkTeePath] !== "allow" ||
+  config.permission.edit[rtkTeePath] !== "deny"
 provider.sort = "throughput"
 if (!pluginExists) config.plugin.push(pluginEntry)
+config.permission.external_directory[rtkTeePath] = "allow"
+config.permission.edit[rtkTeePath] = "deny"
 
 if (!changed && existed) process.exit(0)
 

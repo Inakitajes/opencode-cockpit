@@ -15,6 +15,7 @@ Local OpenCode customizations: plugins, agents, commands, scripts, and config sn
 - `docs/stack.md`: documentation for the local programming stack.
 - `scripts/install.sh`: local installer that copies plugins, agents, and commands to `~/.config/opencode`, and registers the TUI plugin.
 - `config/tui.json`: minimal TUI config example.
+- `config/opencode.json`: minimal OpenCode config example with OpenRouter throughput routing, Warp plugin registration, and a read-only RTK tee log exception.
 
 ## Agents
 
@@ -74,7 +75,9 @@ From the repository root:
 bash scripts/install.sh
 ```
 
-Then restart your OpenCode tabs. Plugins, agents, and commands are loaded on startup.
+Then restart your OpenCode tabs. Plugins, agents, commands, and config updates are loaded on startup.
+
+The installer also merges a focused RTK log permission into `~/.config/opencode/opencode.json`: reads under `~/Library/Application Support/rtk/tee/**` are allowed as an external directory, while edits there are denied.
 
 The `/branch` command requires Worktrunk (`wt`). Recommended installation:
 
@@ -134,7 +137,22 @@ If you do not have a `tui.json`, you can use:
 
 If you already have a `tui.json`, add `"./tui-plugins/status-title.js"` to the existing `plugin` array.
 
-7. Restart OpenCode.
+7. Register the optional RTK tee log permission in `~/.config/opencode/opencode.json`.
+
+```json
+{
+  "permission": {
+    "external_directory": {
+      "~/Library/Application Support/rtk/tee/**": "allow"
+    },
+    "edit": {
+      "~/Library/Application Support/rtk/tee/**": "deny"
+    }
+  }
+}
+```
+
+8. Restart OpenCode.
 
 ## Security
 

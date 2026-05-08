@@ -1,6 +1,14 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "plugin": ["@warp-dot-dev/opencode-warp"],
+  "permission": {
+    "external_directory": {
+      "~/Library/Application Support/rtk/tee/**": "allow"
+    },
+    "edit": {
+      "~/Library/Application Support/rtk/tee/**": "deny"
+    }
+  },
   "provider": {
     "openrouter": {
       "models": {
