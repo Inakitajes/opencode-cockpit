@@ -18,8 +18,19 @@ Follow this workflow:
 6. If tests/checks fail, stop before committing. Report the failure and the likely fix direction.
 7. Stage only relevant files for the intended change. Do not stage unrelated local work unless it is clearly part of the requested commit. If unsure, ask before staging.
 8. Create one conventional commit using the repository's style. Prefer `fix:`, `feat:`, `refactor:`, `test:`, `docs:`, `chore:`, or `ci:` as appropriate.
-9. Push the current branch. If no upstream is configured, use `git push -u origin <current-branch>` when `origin` exists. If no suitable remote exists, stop and report what is missing.
-10. Return a concise summary with commit hash, tests run, push destination, and any caveats.
+9. Verify the commit succeeded before pushing by checking `git rev-parse --short HEAD` and `git status --short --branch`.
+10. Push the current branch only after the commit verification succeeds. If no upstream is configured, use `git push -u origin <current-branch>` when `origin` exists. If no suitable remote exists, stop and report what is missing.
+11. Verify the push succeeded with `git status --short --branch`. If the branch is still ahead of its upstream, report that the commit was created locally but the push did not complete.
+12. Return a concise summary with commit hash, tests run, push destination, post-push status, and any caveats.
+
+Execution ordering:
+
+- Commands that mutate Git state must run sequentially, never in parallel.
+- Run `git add`, then wait for it to finish successfully before running `git commit`.
+- Run `git commit`, then wait for it to finish successfully before running any `git push`.
+- Run `git push`, then wait for it to finish before reporting success.
+- Do not run `git push` in the same parallel tool batch as `git add`, `git commit`, formatting, tests, or any other command that may create or modify commits.
+- Only independent read-only inspection commands may be parallelized.
 
 Safety rules:
 
