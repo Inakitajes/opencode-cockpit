@@ -64,6 +64,8 @@ Requirements:
 
 I recommend using RTK to save tokens when working with these tools. It is optional, but useful for reducing token usage in larger workflows. See <https://github.com/rtk-ai/rtk>.
 
+Initialize RTK for OpenCode with `rtk init --global --opencode`. The delivery commands run through RTK-aware agents, so a verification command rewritten from `pnpm lint` to an `rtk` form should be accepted as the same verification step instead of retried in a loop. Use `RTK_DISABLED=1 <command>` only for a deliberate raw-output rerun.
+
 ## `/push`
 
 Use this when the current work is ready to commit and push. It asks OpenCode to inspect the diff, run relevant tests/checks when available, create a conventional commit, and push the current branch.

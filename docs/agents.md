@@ -38,6 +38,12 @@ Use this for general-purpose implementation where speed matters. It uses GLM 4.7
 
 Use this for frontend and product UI tasks. It is stack-agnostic, requires project inspection before design decisions, and emphasizes reuse of the existing design system, accessibility, responsive behavior, and explicit UI states.
 
+## RTK Command Rewrites
+
+For agents that can run shell commands, prompts explicitly account for RTK's OpenCode plugin rewriting commands. If `pnpm lint`, `npm test`, `git status`, or similar commands appear as `rtk ...` in the transcript, agents should treat that as the expected execution and avoid retry loops.
+
+Use `RTK_DISABLED=1 <command>` only when a command failed, RTK itself reported an error, or raw uncompressed output is needed for debugging.
+
 ## Install
 
 Run the main installer from the repo root:

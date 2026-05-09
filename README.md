@@ -91,6 +91,14 @@ I recommend using RTK to save tokens when working with these tools. It is option
 
 Install RTK from <https://github.com/rtk-ai/rtk>.
 
+For OpenCode, initialize RTK with its OpenCode plugin so command rewrites happen through OpenCode's tool hook:
+
+```sh
+rtk init --global --opencode
+```
+
+The installed agents are RTK-aware: if `pnpm lint` appears in the transcript as `rtk pnpm lint` or another RTK-wrapped form, they treat it as the expected execution of `pnpm lint` and do not retry the raw command unless the command failed, RTK reported an error, or raw output is explicitly needed. Use `RTK_DISABLED=1 <command>` for that one-off raw rerun.
+
 ## Manual Install
 
 1. Create the global folders.

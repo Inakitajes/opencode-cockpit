@@ -36,6 +36,12 @@ Execution ordering:
 - Do not run `git push` in the same parallel tool batch as `git add`, `git commit`, formatting, tests, or any other command that may create or modify commits.
 - Only independent read-only inspection commands may be parallelized.
 
+RTK handling:
+
+- If a verification command such as `pnpm lint`, `npm test`, or `git status` is rewritten to an `rtk` form, count it as the same workflow step.
+- Do not rerun the raw command only because the transcript shows an `rtk` prefix or compressed output.
+- Use `RTK_DISABLED=1 <command>` only if the command failed, RTK itself reported an error, or raw uncompressed output is needed for debugging.
+
 Safety rules:
 
 - Do not use destructive Git commands.
