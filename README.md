@@ -53,9 +53,11 @@ See `docs/commands.md` for usage and argument details.
 
 ## Status
 
-- `🟡 | session`: OpenCode is working.
-- `🟢 | session`: the session is idle or finished.
-- `🔴 | session`: the session needs attention, is retrying, or hit an error.
+- `🟡 | session · branch`: OpenCode is working.
+- `🟢 | session · branch`: the session is idle or finished.
+- `🔴 | session · branch`: the session needs attention, is retrying, or hit an error.
+
+When OpenCode runs inside a Git repository, the TUI plugin appends the current branch to the terminal title. This also works in Git worktrees, including Worktrunk worktrees, because the plugin resolves `.git` files that point at the real Git directory.
 
 ## Notifications
 
