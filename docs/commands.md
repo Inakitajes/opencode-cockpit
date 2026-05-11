@@ -8,7 +8,7 @@ This repo includes global OpenCode commands stored in `commands/*.md`. When inst
 | --- | --- | --- | --- |
 | `/audit` | `plan` | Current/default plan model | Read-only security audit for the current PR branch or full repository. |
 | `/clean-code` | Current session | Current session | Read-only architecture and maintainability audit. |
-| `/branch` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Create a Worktrunk worktree from the current plan and open a fresh OpenCode session there. |
+| `/implement` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Start implementation from the current plan in a fresh Worktrunk worktree. |
 | `/push` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Run relevant tests, create a conventional commit, and push the branch. |
 | `/ship` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Verify tests, push work, open or reuse a PR, and check CI status. |
 
@@ -36,22 +36,22 @@ Example:
 
 The optional argument narrows the audit scope.
 
-## `/branch`
+## `/implement`
 
-Use this after a planning conversation when you want to turn the plan into a new isolated worktree. The command asks OpenCode to infer a branch name from the plan, create a Worktrunk worktree with `wt switch --create`, and open a fresh OpenCode session in that new worktree with the plan passed as the initial prompt.
+Use this after a planning conversation when you want to start implementing the plan in a new isolated worktree. The command asks OpenCode to infer a branch name from the plan, create a Worktrunk worktree with `wt switch --create`, and open a fresh OpenCode session in that new worktree with the plan passed as the initial prompt.
 
-This command pins `openrouter/z-ai/glm-4.7` for stronger branch handoff automation. The installer configures OpenRouter throughput routing for this model, which is equivalent to OpenRouter's `:nitro` variant.
+This command pins `openrouter/z-ai/glm-4.7` for stronger implementation handoff automation. The installer configures OpenRouter throughput routing for this model, which is equivalent to OpenRouter's `:nitro` variant.
 
 Example:
 
 ```text
-/branch
+/implement
 ```
 
 With guidance:
 
 ```text
-/branch feat/billing-retry base main
+/implement feat/billing-retry base main
 ```
 
 Requirements:
@@ -68,7 +68,7 @@ Initialize RTK for OpenCode with `rtk init --global --opencode`. The delivery co
 
 ## `/push`
 
-Use this when the current work is ready to commit and push. It asks OpenCode to inspect the diff, run relevant tests/checks when available, create a conventional commit, and push the current branch.
+Use this when the current work is ready to commit and push. It asks OpenCode to inspect the diff, run relevant tests/checks when available, create a conventional commit, push the current branch, and include an existing PR URL in the final summary when one is found.
 
 This command pins `openrouter/z-ai/glm-4.7` for stronger delivery automation. The installer configures OpenRouter throughput routing for this model, which is equivalent to OpenRouter's `:nitro` variant.
 
@@ -82,7 +82,7 @@ The optional argument is used as guidance for the intended commit scope/message.
 
 ## `/ship`
 
-Use this when a branch should be prepared for review. It checks local state, commits uncommitted work if needed, runs relevant tests/checks, pushes the branch, creates or reuses a GitHub PR, and checks CI status.
+Use this when a branch should be prepared for review. It checks local state, commits uncommitted work if needed, runs relevant tests/checks, pushes the branch, creates or reuses a GitHub PR, checks CI status, and includes the PR URL in the final summary.
 
 This command pins `openrouter/z-ai/glm-4.7` for stronger PR automation. The installer configures OpenRouter throughput routing for this model, which is equivalent to OpenRouter's `:nitro` variant.
 
@@ -102,12 +102,17 @@ Run the main installer from the repo root:
 bash scripts/install.sh
 ```
 
-Or copy commands manually:
+Or copy commands and helpers manually:
 
 ```sh
 mkdir -p ~/.config/opencode/commands
 cp commands/*.md ~/.config/opencode/commands/
-rm -f ~/.config/opencode/commands/safe-commit.md ~/.config/opencode/commands/ready-pr.md
+rm -f ~/.config/opencode/commands/safe-commit.md ~/.config/opencode/commands/ready-pr.md ~/.config/opencode/commands/branch.md
+mkdir -p ~/.config/opencode/bin
+cp scripts/bin/opencode-implement.sh ~/.config/opencode/bin/opencode-implement
+cp scripts/bin/opencode-implement-open.sh ~/.config/opencode/bin/opencode-implement-open
+chmod +x ~/.config/opencode/bin/opencode-implement ~/.config/opencode/bin/opencode-implement-open
+rm -f ~/.config/opencode/bin/opencode-branch ~/.config/opencode/bin/opencode-branch-open
 ```
 
 Restart OpenCode after installing or updating commands.

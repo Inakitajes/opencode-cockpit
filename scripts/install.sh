@@ -22,6 +22,7 @@ TUI_JSON="${CONFIG_DIR}/tui.json"
 TUI_ENTRY="./tui-plugins/status-title.js"
 OPENCODE_JSON="${CONFIG_DIR}/opencode.json"
 OPENCODE_PLUGIN_ENTRY="@warp-dot-dev/opencode-warp"
+BUILD_AGENT_COLOR="#eab308"
 RTK_TEE_PATH="~/Library/Application Support/rtk/tee/**"
 STAMP="$(date +%Y%m%d%H%M%S)"
 
@@ -47,6 +48,15 @@ backup_legacy_command() {
   fi
 }
 
+backup_legacy_bin() {
+  local name="$1"
+  local target="${BIN_TARGET_DIR}/${name}"
+
+  if [ -f "${target}" ]; then
+    mv "${target}" "${target}.bak.${STAMP}"
+  fi
+}
+
 copy_file "${SERVER_PLUGIN_SOURCE}" "${SERVER_PLUGIN_TARGET}"
 copy_file "${TUI_PLUGIN_SOURCE}" "${TUI_PLUGIN_TARGET}"
 
@@ -60,10 +70,13 @@ done
 
 backup_legacy_command "safe-commit"
 backup_legacy_command "ready-pr"
+backup_legacy_command "branch"
 
-copy_file "${BIN_SOURCE_DIR}/opencode-branch.sh" "${BIN_TARGET_DIR}/opencode-branch"
-copy_file "${BIN_SOURCE_DIR}/opencode-branch-open.sh" "${BIN_TARGET_DIR}/opencode-branch-open"
-chmod +x "${BIN_TARGET_DIR}/opencode-branch" "${BIN_TARGET_DIR}/opencode-branch-open"
+copy_file "${BIN_SOURCE_DIR}/opencode-implement.sh" "${BIN_TARGET_DIR}/opencode-implement"
+copy_file "${BIN_SOURCE_DIR}/opencode-implement-open.sh" "${BIN_TARGET_DIR}/opencode-implement-open"
+chmod +x "${BIN_TARGET_DIR}/opencode-implement" "${BIN_TARGET_DIR}/opencode-implement-open"
+backup_legacy_bin "opencode-branch"
+backup_legacy_bin "opencode-branch-open"
 
 if command -v node >/dev/null 2>&1; then
   node - "${TUI_JSON}" "${TUI_ENTRY}" <<'NODE'
@@ -116,12 +129,13 @@ else
 fi
 
 if command -v node >/dev/null 2>&1; then
-  node - "${OPENCODE_JSON}" "${OPENCODE_PLUGIN_ENTRY}" "${RTK_TEE_PATH}" <<'NODE'
+  node - "${OPENCODE_JSON}" "${OPENCODE_PLUGIN_ENTRY}" "${RTK_TEE_PATH}" "${BUILD_AGENT_COLOR}" <<'NODE'
 const fs = require("fs")
 
 const file = process.argv[2]
 const pluginEntry = process.argv[3]
 const rtkTeePath = process.argv[4]
+const buildAgentColor = process.argv[5]
 const schema = "https://opencode.ai/config.json"
 
 let config = { $schema: schema }
@@ -134,7 +148,7 @@ if (fs.existsSync(file)) {
     config = raw.trim() ? JSON.parse(raw) : { $schema: schema }
   } catch (error) {
     console.error(`Could not update ${file}: it is not plain JSON.`)
-    console.error('Add provider.openrouter.models["z-ai/glm-4.7"].options.provider.sort = "throughput" manually.')
+    console.error('Add provider.openrouter.models["z-ai/glm-4.7"].options.provider.sort = "throughput" and agent.build.color manually.')
     process.exit(2)
   }
 }
@@ -142,6 +156,8 @@ if (fs.existsSync(file)) {
 if (!config || typeof config !== "object" || Array.isArray(config)) config = { $schema: schema }
 if (!config.$schema) config.$schema = schema
 if (!Array.isArray(config.plugin)) config.plugin = []
+config.agent ??= {}
+config.agent.build ??= {}
 config.permission ??= {}
 config.permission.external_directory ??= {}
 config.permission.edit ??= {}
@@ -154,10 +170,11 @@ config.provider.openrouter.models["z-ai/glm-4.7"].options.provider ??= {}
 
 const provider = config.provider.openrouter.models["z-ai/glm-4.7"].options.provider
 const pluginExists = config.plugin.some((item) => item === pluginEntry || (Array.isArray(item) && item[0] === pluginEntry))
-const changed = provider.sort !== "throughput" || !pluginExists ||
+const changed = provider.sort !== "throughput" || config.agent.build.color !== buildAgentColor || !pluginExists ||
   config.permission.external_directory[rtkTeePath] !== "allow" ||
   config.permission.edit[rtkTeePath] !== "deny"
 provider.sort = "throughput"
+config.agent.build.color = buildAgentColor
 if (!pluginExists) config.plugin.push(pluginEntry)
 config.permission.external_directory[rtkTeePath] = "allow"
 config.permission.edit[rtkTeePath] = "deny"
@@ -172,7 +189,7 @@ if (existed) {
 fs.writeFileSync(file, `${JSON.stringify(config, null, 2)}\n`)
 NODE
 else
-  printf 'Node.js is not available. Add OpenRouter throughput routing for z-ai/glm-4.7 and plugin "%s" to %s manually.\n' "${OPENCODE_PLUGIN_ENTRY}" "${OPENCODE_JSON}" >&2
+  printf 'Node.js is not available. Add OpenRouter throughput routing for z-ai/glm-4.7, build agent color "%s", and plugin "%s" to %s manually.\n' "${BUILD_AGENT_COLOR}" "${OPENCODE_PLUGIN_ENTRY}" "${OPENCODE_JSON}" >&2
 fi
 
 printf 'Installed OpenCode cockpit files into %s\n' "${CONFIG_DIR}"

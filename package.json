@@ -6,7 +6,7 @@
   "scripts": {
     "check": "bun run check:plugins && bun run check:scripts",
     "check:plugins": "bun -e \"await import('./plugins/tui/status-title.js'); await import('./plugins/server/session-notifications.js'); console.log('plugin imports ok')\"",
-    "check:scripts": "bash -n scripts/install.sh scripts/bin/opencode-branch.sh scripts/bin/opencode-branch-open.sh",
+    "check:scripts": "bash -n scripts/install.sh scripts/bin/opencode-implement.sh scripts/bin/opencode-implement-open.sh",
     "install:local": "bash scripts/install.sh"
   }
 }

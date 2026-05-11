@@ -13,9 +13,9 @@ Local OpenCode customizations: plugins, agents, commands, scripts, and config sn
 - `docs/agents.md`: documentation for the included agents.
 - `docs/commands.md`: documentation for the included commands.
 - `docs/stack.md`: documentation for the local programming stack.
-- `scripts/install.sh`: local installer that copies plugins, agents, and commands to `~/.config/opencode`, and registers the TUI plugin.
+- `scripts/install.sh`: local installer that copies plugins, agents, commands, and helpers to `~/.config/opencode`, and registers the TUI plugin.
 - `config/tui.json`: minimal TUI config example.
-- `config/opencode.json`: minimal OpenCode config example with OpenRouter throughput routing, Warp plugin registration, and a read-only RTK tee log exception.
+- `config/opencode.json`: minimal OpenCode config example with OpenRouter throughput routing, Warp plugin registration, build agent color, and a read-only RTK tee log exception.
 
 ## Agents
 
@@ -26,6 +26,8 @@ This repo includes a versioned copy of your global custom agents:
 - `fast`: fast full-access primary agent using GLM 4.7 on OpenRouter Nitro; not available as a subagent.
 - `design`: UI/UX specialist using Claude Opus 4.7 on Anthropic.
 
+Agent colors are pinned for stable TUI identification: `plan` blue, `build` amber, `design` orange, `fast` green, and `ask` violet.
+
 See `docs/agents.md` for model, permission, and usage details.
 
 ## Stack
@@ -33,7 +35,7 @@ See `docs/agents.md` for model, permission, and usage details.
 The local programming stack is built around OpenCode, Worktrunk (`wt`), and Ghostty:
 
 - OpenCode as the cockpit for agents, commands, and plugins.
-- Worktrunk for creating isolated branches/worktrees from plans with `/branch`.
+- Worktrunk for starting implementations in isolated worktrees from plans with `/implement`.
 - Ghostty as the main terminal for running OpenCode sessions.
 - Raycast Prompt Stash as an out-of-band prompt queue for capturing follow-up prompts while OpenCode is still working. It avoids sending those prompts into the current agentic loop until you intentionally pop one into the focused input.
 
@@ -45,7 +47,7 @@ This repo includes global custom commands:
 
 - `/clean-code`: read-only audit for architecture, maintainability, SRP, SOLID, and code smells.
 - `/audit`: read-only security audit for the current PR or full repository using the `plan` agent.
-- `/branch`: creates a Worktrunk worktree from the current plan and opens a clean OpenCode session there.
+- `/implement`: starts implementation from the current plan in a Worktrunk worktree and opens a clean OpenCode session there.
 - `/push`: runs relevant tests/checks, creates a conventional commit, and pushes.
 - `/ship`: prepares the branch, pushes, opens or reuses a PR, and verifies checks.
 
@@ -81,7 +83,7 @@ Then restart your OpenCode tabs. Plugins, agents, commands, and config updates a
 
 The installer also merges a focused RTK log permission into `~/.config/opencode/opencode.json`: reads under `~/Library/Application Support/rtk/tee/**` are allowed as an external directory, while edits there are denied.
 
-The `/branch` command requires Worktrunk (`wt`). Recommended installation:
+The `/implement` command requires Worktrunk (`wt`). Recommended installation:
 
 ```sh
 brew install worktrunk && wt config shell install
@@ -106,7 +108,7 @@ The installed agents are RTK-aware: if `pnpm lint` appears in the transcript as 
 1. Create the global folders.
 
 ```sh
-mkdir -p ~/.config/opencode/plugins ~/.config/opencode/tui-plugins ~/.config/opencode/agents ~/.config/opencode/commands
+mkdir -p ~/.config/opencode/plugins ~/.config/opencode/tui-plugins ~/.config/opencode/agents ~/.config/opencode/commands ~/.config/opencode/bin
 ```
 
 2. Copy the server plugin.
@@ -131,10 +133,19 @@ cp agents/*.md ~/.config/opencode/agents/
 
 ```sh
 cp commands/*.md ~/.config/opencode/commands/
-rm -f ~/.config/opencode/commands/safe-commit.md ~/.config/opencode/commands/ready-pr.md
+rm -f ~/.config/opencode/commands/safe-commit.md ~/.config/opencode/commands/ready-pr.md ~/.config/opencode/commands/branch.md
 ```
 
-6. Register the TUI plugin in `~/.config/opencode/tui.json`.
+6. Copy the Worktrunk helpers.
+
+```sh
+cp scripts/bin/opencode-implement.sh ~/.config/opencode/bin/opencode-implement
+cp scripts/bin/opencode-implement-open.sh ~/.config/opencode/bin/opencode-implement-open
+chmod +x ~/.config/opencode/bin/opencode-implement ~/.config/opencode/bin/opencode-implement-open
+rm -f ~/.config/opencode/bin/opencode-branch ~/.config/opencode/bin/opencode-branch-open
+```
+
+7. Register the TUI plugin in `~/.config/opencode/tui.json`.
 
 If you do not have a `tui.json`, you can use:
 
@@ -147,10 +158,15 @@ If you do not have a `tui.json`, you can use:
 
 If you already have a `tui.json`, add `"./tui-plugins/status-title.js"` to the existing `plugin` array.
 
-7. Register the optional RTK tee log permission in `~/.config/opencode/opencode.json`.
+8. Register the build agent color and optional RTK tee log permission in `~/.config/opencode/opencode.json`.
 
 ```json
 {
+  "agent": {
+    "build": {
+      "color": "#eab308"
+    }
+  },
   "permission": {
     "external_directory": {
       "~/Library/Application Support/rtk/tee/**": "allow"
@@ -162,7 +178,7 @@ If you already have a `tui.json`, add `"./tui-plugins/status-title.js"` to the e
 }
 ```
 
-8. Restart OpenCode.
+9. Restart OpenCode.
 
 ## Security
 
@@ -205,7 +221,7 @@ Then assign hotkeys from Raycast Preferences > Extensions > Prompt Stash. Recomm
 - `Pop Prompt`: pastes the oldest prompt into the active app and archives it.
 - `Manage Prompts`: lets you view the queue and history, paste a specific prompt, restore archived prompts, or delete items.
 
-Install plugins, agents, and commands locally from the repo:
+Install plugins, agents, commands, and helpers locally from the repo:
 
 ```sh
 bun run install:local
@@ -216,17 +232,20 @@ bun run install:local
 Remove these files:
 
 ```sh
-rm ~/.config/opencode/plugins/session-notifications.js
-rm ~/.config/opencode/tui-plugins/status-title.js
-rm ~/.config/opencode/agents/ask.md
-rm ~/.config/opencode/agents/fast.md
-rm ~/.config/opencode/agents/design.md
-rm ~/.config/opencode/commands/clean-code.md
-rm ~/.config/opencode/commands/push.md
-rm ~/.config/opencode/commands/ship.md
-rm ~/.config/opencode/commands/branch.md
-rm ~/.config/opencode/bin/opencode-branch
-rm ~/.config/opencode/bin/opencode-branch-open
+rm -f ~/.config/opencode/plugins/session-notifications.js
+rm -f ~/.config/opencode/tui-plugins/status-title.js
+rm -f ~/.config/opencode/agents/ask.md
+rm -f ~/.config/opencode/agents/fast.md
+rm -f ~/.config/opencode/agents/design.md
+rm -f ~/.config/opencode/commands/clean-code.md
+rm -f ~/.config/opencode/commands/push.md
+rm -f ~/.config/opencode/commands/ship.md
+rm -f ~/.config/opencode/commands/implement.md
+rm -f ~/.config/opencode/commands/branch.md
+rm -f ~/.config/opencode/bin/opencode-implement
+rm -f ~/.config/opencode/bin/opencode-implement-open
+rm -f ~/.config/opencode/bin/opencode-branch
+rm -f ~/.config/opencode/bin/opencode-branch-open
 ```
 
 Then remove `"./tui-plugins/status-title.js"` from `~/.config/opencode/tui.json` and restart OpenCode.

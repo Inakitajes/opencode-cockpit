@@ -30,7 +30,7 @@ exec $(printf '%q' "$OPENCODE_BIN") --prompt "\$PROMPT"
 EOF
 chmod +x "$BOOTSTRAP"
 
-DEFAULT_SHELL="${OPENCODE_BRANCH_SHELL:-${SHELL:-/bin/bash}}"
+DEFAULT_SHELL="${OPENCODE_IMPLEMENT_SHELL:-${SHELL:-/bin/bash}}"
 if [ ! -x "$DEFAULT_SHELL" ]; then
   DEFAULT_SHELL="/bin/bash"
 fi

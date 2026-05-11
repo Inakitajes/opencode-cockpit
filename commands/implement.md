@@ -1,10 +1,10 @@
 ---
-description: Create a Worktrunk worktree from the current plan and open a fresh OpenCode session there
+description: Start implementation from the current plan in a fresh Worktrunk worktree
 agent: fast
 model: "openrouter/z-ai/glm-4.7"
 ---
 
-Create a new Worktrunk worktree from the plan we have just designed in this conversation, then open a clean OpenCode session in that new worktree with the plan passed as the starting prompt.
+Start implementing the plan we have just designed in this conversation by creating a new Worktrunk worktree, then open a clean OpenCode session in that new worktree with the plan passed as the starting prompt.
 
 Use `$ARGUMENTS` as optional guidance for branch name, branch type, or base branch. If the user provides an explicit branch name, prefer it. Otherwise infer a concise branch name from the current plan.
 
@@ -38,7 +38,7 @@ Workflow:
 4. Run the installed helper with the branch name and pass the handoff prompt on stdin:
 
 ```sh
-~/.config/opencode/bin/opencode-branch '<branch-name>' <<'EOF'
+~/.config/opencode/bin/opencode-implement '<branch-name>' <<'EOF'
 <handoff prompt>
 EOF
 ```

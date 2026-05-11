@@ -100,7 +100,7 @@ fi
 CONFIG_DIR="${OPENCODE_CONFIG_DIR:-${HOME}/.config/opencode}"
 PLAN_DIR="${OPENCODE_COCKPIT_TMPDIR:-${CONFIG_DIR}/tmp/opencode-cockpit}"
 mkdir -p "$PLAN_DIR"
-PLAN_FILE="$(mktemp "$PLAN_DIR/branch-plan.XXXXXX.md")"
+PLAN_FILE="$(mktemp "$PLAN_DIR/implement-plan.XXXXXX.md")"
 cat > "$PLAN_FILE"
 
 if [ ! -s "$PLAN_FILE" ]; then
@@ -109,9 +109,9 @@ Continue from the previous OpenCode planning session. No explicit plan text was 
 PLAN
 fi
 
-OPEN_SCRIPT="${OPENCODE_BRANCH_OPEN_SCRIPT:-${HOME}/.config/opencode/bin/opencode-branch-open}"
+OPEN_SCRIPT="${OPENCODE_IMPLEMENT_OPEN_SCRIPT:-${HOME}/.config/opencode/bin/opencode-implement-open}"
 if [ ! -x "$OPEN_SCRIPT" ]; then
-  printf 'OpenCode branch opener not found or not executable: %s\n' "$OPEN_SCRIPT" >&2
+  printf 'OpenCode implement opener not found or not executable: %s\n' "$OPEN_SCRIPT" >&2
   exit 1
 fi
 
