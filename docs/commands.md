@@ -8,7 +8,8 @@ This repo includes global OpenCode commands stored in `commands/*.md`. When inst
 | --- | --- | --- | --- |
 | `/audit` | `plan` | Current/default plan model | Read-only security audit for the current PR branch or full repository. |
 | `/clean-code` | Current session | Current session | Read-only architecture and maintainability audit. |
-| `/implement` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Start implementation from the current plan in a fresh Worktrunk worktree. |
+| `/write-plan` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Write a repository-aware implementation plan and save it to the preferred plan path. |
+| `/implement` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Start implementation from the current plan in a repo-aware Worktrunk worktree. |
 | `/push` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Run relevant tests, create a conventional commit, and push the branch. |
 | `/ship` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Verify tests, push work, open or reuse a PR, and check CI status. |
 
@@ -36,9 +37,29 @@ Example:
 
 The optional argument narrows the audit scope.
 
+## `/write-plan`
+
+Use this when you want a concrete implementation plan saved into the current repository before starting code changes. The command asks OpenCode to inspect repository instructions and relevant code, follow the repository's planning conventions when present, and write an execution-ready plan with exact file paths, verification commands, and an explicit TDD loop.
+
+This command pins `openrouter/z-ai/glm-4.7` for stronger planning automation. The installer configures OpenRouter throughput routing for this model, which is equivalent to OpenRouter's `:nitro` variant.
+
+Example:
+
+```text
+/write-plan add billing retry handling
+```
+
+With guidance:
+
+```text
+/write-plan PROJ-325 billing retry handling
+```
+
+The command saves the plan to the repository's preferred plan path when documented, otherwise it falls back to `docs/plans/YYYY-MM-DD-<short-name>.md`.
+
 ## `/implement`
 
-Use this after a planning conversation when you want to start implementing the plan in a new isolated worktree. The command asks OpenCode to infer a branch name from the plan, create a Worktrunk worktree with `wt switch --create`, and open a fresh OpenCode session in that new worktree with the plan passed as the initial prompt.
+Use this after a planning conversation when you want to start implementing the plan in a new isolated worktree. The command asks OpenCode to inspect the repository instructions first, infer a branch name that follows repository conventions when present, create a Worktrunk worktree with `wt switch --create`, and open a fresh OpenCode session in that new worktree with a repository-aware handoff prompt.
 
 This command pins `openrouter/z-ai/glm-4.7` for stronger implementation handoff automation. The installer configures OpenRouter throughput routing for this model, which is equivalent to OpenRouter's `:nitro` variant.
 
@@ -53,6 +74,8 @@ With guidance:
 ```text
 /implement feat/billing-retry base main
 ```
+
+The implementation handoff includes repository workflow rules, required setup and verification commands, and an explicit TDD loop so the new session starts with the expected execution discipline.
 
 Requirements:
 
