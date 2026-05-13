@@ -8,6 +8,7 @@ This repo includes global OpenCode commands stored in `commands/*.md`. When inst
 | --- | --- | --- | --- |
 | `/audit` | `plan` | Current/default plan model | Read-only security audit for the current PR branch or full repository. |
 | `/clean-code` | Current session | Current session | Read-only architecture and maintainability audit. |
+| `/external-review` | `plan` | Current/default plan model | Run Claude Code external review, then adjudicate findings before implementation. |
 | `/write-plan` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Write a repository-aware implementation plan and save it to the preferred plan path. |
 | `/implement` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Start implementation from the current plan in a repo-aware Worktrunk worktree. |
 | `/push` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Run relevant tests, create a conventional commit, and push the branch. |
@@ -36,6 +37,30 @@ Example:
 ```
 
 The optional argument narrows the audit scope.
+
+## `/external-review`
+
+Use this when you want a second opinion on the current PR or branch before implementing review changes. It runs Claude Code `ultrareview` through the local helper, waits for the external report, then asks OpenCode's `plan` agent to independently assess which findings are valid and worth implementing.
+
+The helper requests Claude's JSON findings by default so OpenCode can analyze the structured report. Pass `--text` if you want Claude's formatted findings instead.
+
+Example:
+
+```text
+/external-review
+```
+
+With guidance:
+
+```text
+/external-review --timeout 45 123
+```
+
+Requirements:
+
+- Claude Code must be installed, authenticated, and available as `claude`.
+- The installed Claude Code version must support `claude ultrareview`.
+- The command is read-only: it recommends changes and waits for confirmation before any implementation.
 
 ## `/write-plan`
 
@@ -134,7 +159,8 @@ rm -f ~/.config/opencode/commands/safe-commit.md ~/.config/opencode/commands/rea
 mkdir -p ~/.config/opencode/bin
 cp scripts/bin/opencode-implement.sh ~/.config/opencode/bin/opencode-implement
 cp scripts/bin/opencode-implement-open.sh ~/.config/opencode/bin/opencode-implement-open
-chmod +x ~/.config/opencode/bin/opencode-implement ~/.config/opencode/bin/opencode-implement-open
+cp scripts/bin/opencode-external-review.sh ~/.config/opencode/bin/opencode-external-review
+chmod +x ~/.config/opencode/bin/opencode-implement ~/.config/opencode/bin/opencode-implement-open ~/.config/opencode/bin/opencode-external-review
 rm -f ~/.config/opencode/bin/opencode-branch ~/.config/opencode/bin/opencode-branch-open
 ```
 

@@ -8,7 +8,7 @@ Local OpenCode customizations: plugins, agents, commands, scripts, and config sn
 - `plugins/server/session-notifications.js`: server plugin that sends local macOS notifications.
 - `agents/*.md`: versioned global custom agents.
 - `commands/*.md`: versioned global custom slash commands.
-- `scripts/bin/*`: local helpers for integrations like Worktrunk.
+- `scripts/bin/*`: local helpers for integrations like Worktrunk and Claude Code review.
 - `raycast/prompt-stash`: Raycast extension that manages a Prompt Stash: a FIFO queue for future prompts that should stay outside the OpenCode agent loop until you explicitly paste them.
 - `docs/agents.md`: documentation for the included agents.
 - `docs/commands.md`: documentation for the included commands.
@@ -47,6 +47,7 @@ This repo includes global custom commands:
 
 - `/clean-code`: read-only audit for architecture, maintainability, SRP, SOLID, and code smells.
 - `/audit`: read-only security audit for the current PR or full repository using the `plan` agent.
+- `/external-review`: runs Claude Code `ultrareview`, then has OpenCode adjudicate the findings before any implementation.
 - `/write-plan`: writes a repository-aware implementation plan to the preferred plan path.
 - `/implement`: starts implementation from the current plan in a repo-aware Worktrunk worktree and opens a clean OpenCode session there.
 - `/push`: runs relevant tests/checks, creates a conventional commit, and pushes.
@@ -89,6 +90,8 @@ The `/implement` command requires Worktrunk (`wt`). Recommended installation:
 ```sh
 brew install worktrunk && wt config shell install
 ```
+
+The `/external-review` command requires Claude Code (`claude`) with `ultrareview` available and authenticated.
 
 ## Recommended
 
@@ -137,12 +140,13 @@ cp commands/*.md ~/.config/opencode/commands/
 rm -f ~/.config/opencode/commands/safe-commit.md ~/.config/opencode/commands/ready-pr.md ~/.config/opencode/commands/branch.md
 ```
 
-6. Copy the Worktrunk helpers.
+6. Copy the helper scripts.
 
 ```sh
 cp scripts/bin/opencode-implement.sh ~/.config/opencode/bin/opencode-implement
 cp scripts/bin/opencode-implement-open.sh ~/.config/opencode/bin/opencode-implement-open
-chmod +x ~/.config/opencode/bin/opencode-implement ~/.config/opencode/bin/opencode-implement-open
+cp scripts/bin/opencode-external-review.sh ~/.config/opencode/bin/opencode-external-review
+chmod +x ~/.config/opencode/bin/opencode-implement ~/.config/opencode/bin/opencode-implement-open ~/.config/opencode/bin/opencode-external-review
 rm -f ~/.config/opencode/bin/opencode-branch ~/.config/opencode/bin/opencode-branch-open
 ```
 
@@ -191,10 +195,12 @@ If you already have a `tui.json`, add `"./tui-plugins/status-title.js"` to the e
 - Agents are local OpenCode Markdown configuration files.
 - Commands are local OpenCode Markdown configuration files.
 - Helpers are installed into `~/.config/opencode/bin` and do not execute remote code.
+- `/external-review` invokes the local Claude Code CLI; review content may be sent to Claude Code services according to that tool's behavior.
 
 ## Compatibility
 
 - Tested with OpenCode `1.14.39`.
+- `/external-review` requires a Claude Code version that supports `claude ultrareview`.
 - Title updates depend on your terminal supporting `OSC 0`/`setTerminalTitle`.
 - The included notifications are for macOS. On other systems, the plugin simply does not send notifications.
 
@@ -239,12 +245,15 @@ rm -f ~/.config/opencode/agents/ask.md
 rm -f ~/.config/opencode/agents/fast.md
 rm -f ~/.config/opencode/agents/design.md
 rm -f ~/.config/opencode/commands/clean-code.md
+rm -f ~/.config/opencode/commands/external-review.md
 rm -f ~/.config/opencode/commands/push.md
 rm -f ~/.config/opencode/commands/ship.md
 rm -f ~/.config/opencode/commands/implement.md
+rm -f ~/.config/opencode/commands/write-plan.md
 rm -f ~/.config/opencode/commands/branch.md
 rm -f ~/.config/opencode/bin/opencode-implement
 rm -f ~/.config/opencode/bin/opencode-implement-open
+rm -f ~/.config/opencode/bin/opencode-external-review
 rm -f ~/.config/opencode/bin/opencode-branch
 rm -f ~/.config/opencode/bin/opencode-branch-open
 ```
