@@ -1,6 +1,11 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "plugin": ["@warp-dot-dev/opencode-warp"],
+  "agent": {
+    "build": {
+      "color": "#eab308"
+    }
+  },
   "permission": {
     "external_directory": {
       "~/Library/Application Support/rtk/tee/**": "allow"

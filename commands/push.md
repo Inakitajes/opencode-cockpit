@@ -21,7 +21,8 @@ Follow this workflow:
 9. Verify the commit succeeded before pushing by checking `git rev-parse --short HEAD` and `git status --short --branch`.
 10. Push the current branch only after the commit verification succeeds. If no upstream is configured, use `git push -u origin <current-branch>` when `origin` exists. If no suitable remote exists, stop and report what is missing.
 11. Verify the push succeeded with `git status --short --branch`. If the branch is still ahead of its upstream, report that the commit was created locally but the push did not complete.
-12. Return a concise summary with commit hash, tests run, push destination, post-push status, and any caveats.
+12. After a successful push, use `gh pr list --head <current-branch> --json url --jq '.[0].url'` to check whether the current branch already has a pull request. If `gh` authentication is missing or no PR exists, continue and report that no PR URL was found.
+13. Return a concise summary with commit hash, tests run, push destination, post-push status, pull request URL when found, and any caveats.
 
 Execution ordering:
 

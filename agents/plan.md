@@ -1,6 +1,7 @@
 ---
 description: Read-only planning agent for analysis, audits, and concise action plans
 mode: primary
+color: "#38bdf8"
 permission:
   edit: deny
   bash: ask

@@ -24,8 +24,8 @@ Follow this workflow:
     - Tests/checks run, with exact commands and result.
     - Review notes or risks, if any.
     - A checklist for tests, self-review, docs/config updates when relevant, and no secrets.
-11. After creating or finding the PR, check CI status with `gh pr checks`. If checks are still pending, wait for them when practical. If checks fail, report the failing checks and likely next action.
-12. Return the PR URL, final check status, tests run locally, and any unresolved risks.
+11. After creating or finding the PR, capture its URL explicitly with `gh pr view --json url --jq .url`, then check CI status with `gh pr checks`. If checks are still pending, wait for them when practical. If checks fail, report the failing checks and likely next action.
+12. Return a concise summary that always includes the pull request URL, final check status, tests run locally, and any unresolved risks.
 
 Execution ordering:
 

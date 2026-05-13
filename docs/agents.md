@@ -11,6 +11,16 @@ This repo keeps a versioned copy of the global OpenCode agents stored in `~/.con
 | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | `primary` | Full-access fast implementation agent for day-to-day work, not available for subagent delegation. |
 | `design` | `anthropic/claude-opus-4-7` | `primary` | UI/UX specialist for design-system-aware frontend work. |
 
+## Colors
+
+| Agent | Color | Hex |
+| --- | --- | --- |
+| `plan` | blue | `#38bdf8` |
+| `build` | gold | `#eab308` |
+| `design` | orange | `#f97316` |
+| `fast` | green | `#22c55e` |
+| `ask` | violet | `#a78bfa` |
+
 ## Permission Model
 
 | Agent | Permissions |

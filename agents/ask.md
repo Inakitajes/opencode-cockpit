@@ -2,6 +2,7 @@
 description: Read-only research and exploration agent with web access
 mode: all
 model: openrouter/z-ai/glm-4.7
+color: "#a78bfa"
 permission:
   edit: deny
   bash: deny
