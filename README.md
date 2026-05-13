@@ -35,7 +35,7 @@ See `docs/agents.md` for model, permission, and usage details.
 The local programming stack is built around OpenCode, Worktrunk (`wt`), and Ghostty:
 
 - OpenCode as the cockpit for agents, commands, and plugins.
-- Worktrunk for starting implementations in isolated worktrees from plans with `/implement`.
+- Worktrunk for starting implementations in isolated worktrees from plans with `/write-plan` and `/implement`.
 - Ghostty as the main terminal for running OpenCode sessions.
 - Raycast Prompt Stash as an out-of-band prompt queue for capturing follow-up prompts while OpenCode is still working. It avoids sending those prompts into the current agentic loop until you intentionally pop one into the focused input.
 
@@ -47,7 +47,8 @@ This repo includes global custom commands:
 
 - `/clean-code`: read-only audit for architecture, maintainability, SRP, SOLID, and code smells.
 - `/audit`: read-only security audit for the current PR or full repository using the `plan` agent.
-- `/implement`: starts implementation from the current plan in a Worktrunk worktree and opens a clean OpenCode session there.
+- `/write-plan`: writes a repository-aware implementation plan to the preferred plan path.
+- `/implement`: starts implementation from the current plan in a repo-aware Worktrunk worktree and opens a clean OpenCode session there.
 - `/push`: runs relevant tests/checks, creates a conventional commit, and pushes.
 - `/ship`: prepares the branch, pushes, opens or reuses a PR, and verifies checks.
 
