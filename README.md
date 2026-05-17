@@ -50,6 +50,7 @@ This repo includes global custom commands:
 - `/external-review`: runs Claude Code `ultrareview`, then has OpenCode adjudicate the findings before any implementation.
 - `/write-plan`: writes a repository-aware implementation plan to the preferred plan path.
 - `/implement`: starts implementation from the current plan in a repo-aware Worktrunk worktree and opens a clean OpenCode session there.
+- `/sync-main`: fetches remote `main`, merges it into the current branch, and resolves real or semantic conflicts.
 - `/push`: runs relevant tests/checks, creates a conventional commit, and pushes.
 - `/ship`: prepares the branch, pushes, opens or reuses a PR, and verifies checks.
 

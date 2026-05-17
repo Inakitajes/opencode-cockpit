@@ -11,6 +11,7 @@ This repo includes global OpenCode commands stored in `commands/*.md`. When inst
 | `/external-review` | `plan` | Current/default plan model | Run Claude Code external review, then adjudicate findings before implementation. |
 | `/write-plan` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Write a repository-aware implementation plan and save it to the preferred plan path. |
 | `/implement` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Start implementation from the current plan in a repo-aware Worktrunk worktree. |
+| `/sync-main` | `build` | Current/default build model | Fetch remote `main`, merge it into the current branch, and resolve real or semantic conflicts. |
 | `/push` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Run relevant tests, create a conventional commit, and push the branch. |
 | `/ship` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Verify tests, push work, open or reuse a PR, and check CI status. |
 
@@ -107,6 +108,30 @@ Requirements:
 - `wt` must be installed and configured. See <https://github.com/max-sixty/worktrunk>.
 - The installer copies helper scripts to `~/.config/opencode/bin/`.
 - On macOS, the helper opens a new Ghostty tab in the front window when possible, falls back to a new Ghostty window, then Terminal. Other systems print the command to run manually.
+
+## `/sync-main`
+
+Use this when a feature branch has fallen behind remote `main` and should be updated with a merge, not a rebase. It asks OpenCode's default `build` agent to fetch `origin/main`, merge it into the current branch, resolve text conflicts and semantic conflicts while preserving behavior from both sides, and run relevant verification.
+
+This command intentionally does not pin a model. It uses whatever model is configured for the `build` agent in the current OpenCode setup.
+
+Example:
+
+```text
+/sync-main
+```
+
+With guidance:
+
+```text
+/sync-main focus package manager lockfile conflicts
+```
+
+Safety behavior:
+
+- It stops before starting the merge if there are uncommitted changes, rather than stashing, discarding, or committing them automatically.
+- It does not push unless explicitly requested.
+- It never rebases, force pushes, or blindly chooses ours/theirs for conflict resolution.
 
 ## Recommended
 
