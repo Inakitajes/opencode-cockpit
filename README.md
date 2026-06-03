@@ -6,7 +6,7 @@ Local OpenCode customizations: plugins, agents, commands, scripts, and config sn
 
 - `plugins/tui/status-title.js`: TUI plugin that updates the terminal tab/window title.
 - `plugins/server/session-notifications.js`: server plugin that sends local macOS notifications.
-- `agents/*.md`: versioned global custom agents.
+- `agents/*.md`: versioned global custom agents and local overrides for built-in agents.
 - `commands/*.md`: versioned global custom slash commands.
 - `scripts/bin/*`: local helpers for integrations like Worktrunk and Claude Code review.
 - `raycast/prompt-stash`: Raycast extension that manages a Prompt Stash: a FIFO queue for future prompts that should stay outside the OpenCode agent loop until you explicitly paste them.
@@ -21,12 +21,13 @@ Local OpenCode customizations: plugins, agents, commands, scripts, and config sn
 
 This repo includes a versioned copy of your global custom agents:
 
+- `build`: default implementation agent with RTK-aware shell handling.
 - `ask`: read-only agent for research, codebase exploration, and web research.
 - `plan`: primary read-only agent for planning, analysis, and audits.
 - `fast`: fast full-access primary agent using GLM 4.7 on OpenRouter Nitro; not available as a subagent.
 - `design`: UI/UX specialist using Claude Opus 4.7 on Anthropic.
 
-Agent colors are pinned for stable TUI identification: `plan` blue, `build` amber, `design` orange, `fast` green, and `ask` violet.
+Agent colors are pinned for stable TUI identification: `plan` blue, `build` gold, `design` orange, `fast` green, and `ask` violet.
 
 See `docs/agents.md` for model, permission, and usage details.
 
@@ -106,7 +107,7 @@ For OpenCode, initialize RTK with its OpenCode plugin so command rewrites happen
 rtk init --global --opencode
 ```
 
-The installed agents are RTK-aware: if `pnpm lint` appears in the transcript as `rtk pnpm lint` or another RTK-wrapped form, they treat it as the expected execution of `pnpm lint` and do not retry the raw command unless the command failed, RTK reported an error, or raw output is explicitly needed. Use `RTK_DISABLED=1 <command>` for that one-off raw rerun.
+The installed shell-capable agents are RTK-aware: if `pnpm lint` appears in the transcript as `rtk lint`, `rtk pnpm lint`, or another RTK-wrapped form, they treat it as the expected execution of `pnpm lint` and do not retry the raw command unless the command failed, RTK reported an error, or raw output is explicitly needed. They should not bypass RTK by invoking tools through absolute binary paths. Use `RTK_DISABLED=1 <command>` for that one-off raw rerun.
 
 ## Manual Install
 
