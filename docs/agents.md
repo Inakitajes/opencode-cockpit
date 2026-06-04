@@ -36,7 +36,7 @@ This repo keeps a versioned copy of the global OpenCode agents stored in `~/.con
 
 ### `build`
 
-Use this for the default full-access implementation flow. This repo overrides the built-in `build` agent with a local prompt that keeps OpenCode's normal permissions while making shell execution RTK-aware. If RTK rewrites `git status --short --branch` to `rtk git status --short --branch`, `pnpm lint` to `rtk lint`, or another equivalent RTK form, the agent should treat it as successful execution of the intended command and must not retry the raw command or bypass RTK with absolute binary paths unless there is a concrete failure or debugging need.
+Use this for the default full-access implementation flow. This repo overrides the built-in `build` agent with a local prompt that keeps OpenCode's normal permissions while making shell execution RTK-aware. If RTK rewrites `git status --short --branch` to `rtk git status --short --branch`, `pnpm lint` to `rtk lint`, or another equivalent RTK form, the agent should treat it as successful execution of the intended command and must not retry the raw command or bypass RTK with absolute binary paths unless there is a concrete failure or debugging need. The prompt also tells the agent that the transcript may show the post-hook command, so it must not conclude that it accidentally typed `rtk` or rerun just to make the transcript display the raw command.
 
 ### `plan`
 
@@ -56,7 +56,7 @@ Use this for frontend and product UI tasks. It is stack-agnostic, requires proje
 
 ## RTK Command Rewrites
 
-For agents that can run shell commands, prompts explicitly account for RTK's OpenCode plugin rewriting commands. If `pnpm lint`, `npm test`, `git status`, or similar commands appear as `rtk ...` in the transcript, agents should treat that as the expected execution and avoid retry loops.
+For agents that can run shell commands, prompts explicitly account for RTK's OpenCode plugin rewriting commands. If `pnpm lint`, `npm test`, `git status`, or similar commands appear as `rtk ...` in the transcript, agents should treat that as the expected execution and avoid retry loops. The transcript may show RTK's post-hook command rather than the original command the agent supplied; this is expected and should not be treated as a mistaken tool call.
 
 Agents should not bypass RTK by invoking tools through absolute binary paths. Use `RTK_DISABLED=1 <command>` only when a command failed, RTK itself reported an error, or raw uncompressed output is needed for debugging.
 

@@ -60,6 +60,6 @@ For each task, return:
 
 ## RTK command rewrites
 
-RTK may be installed in OpenCode and transparently rewrite shell commands to `rtk` equivalents. Treat RTK-wrapped commands as the expected execution of the original command, not as an accidental command change. Do not retry a raw command only because the transcript shows an `rtk` prefix or compressed output.
+RTK may be installed in OpenCode and transparently rewrite shell commands to `rtk` equivalents. When you call the Bash tool, use the normal user-facing command you intend to run. The command shown later in the transcript may be the post-hook command that actually executed, not proof of what you originally typed. Treat RTK-wrapped commands as the expected execution of the original command, not as an accidental command change. Do not retry a raw command only because the transcript shows an `rtk` prefix or compressed output, and do not try to "correct" the transcript so it shows the raw command.
 
 Only rerun with `RTK_DISABLED=1 <command>` if the command failed, RTK itself reported an error, or raw uncompressed output is needed for debugging. State that reason before doing so.

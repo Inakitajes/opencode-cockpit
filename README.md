@@ -107,7 +107,7 @@ For OpenCode, initialize RTK with its OpenCode plugin so command rewrites happen
 rtk init --global --opencode
 ```
 
-The installed shell-capable agents are RTK-aware: if `pnpm lint` appears in the transcript as `rtk lint`, `rtk pnpm lint`, or another RTK-wrapped form, they treat it as the expected execution of `pnpm lint` and do not retry the raw command unless the command failed, RTK reported an error, or raw output is explicitly needed. They should not bypass RTK by invoking tools through absolute binary paths. Use `RTK_DISABLED=1 <command>` for that one-off raw rerun.
+The installed shell-capable agents are RTK-aware: if `pnpm lint` appears in the transcript as `rtk lint`, `rtk pnpm lint`, or another RTK-wrapped form, they treat it as the expected execution of `pnpm lint` and do not retry the raw command unless the command failed, RTK reported an error, or raw output is explicitly needed. The transcript may show RTK's post-hook command rather than the original command the agent supplied, so agents should not try to "correct" it just to make the raw command appear. They should not bypass RTK by invoking tools through absolute binary paths. Use `RTK_DISABLED=1 <command>` for that one-off raw rerun.
 
 ## Manual Install
 
