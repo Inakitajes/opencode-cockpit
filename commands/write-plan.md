@@ -45,8 +45,3 @@ Plan requirements:
 - Include the setup command the implementation workspace should run first when the repository defines one.
 - Include a final delivery task covering the required checks, commit guidance, and PR or MR workflow when the repository defines them.
 - Do not use placeholders such as `TODO`, `TBD`, `add tests`, `handle edge cases`, or `update docs` without exact instructions.
-
-RTK handling:
-
-- If shell commands are rewritten to `rtk` forms, treat them as the expected execution of the original command.
-- Do not rerun a raw command only because the transcript shows an `rtk` prefix or compact output.

@@ -15,13 +15,13 @@ Local OpenCode customizations: plugins, agents, commands, scripts, and config sn
 - `docs/stack.md`: documentation for the local programming stack.
 - `scripts/install.sh`: local installer that copies plugins, agents, commands, and helpers to `~/.config/opencode`, and registers the TUI plugin.
 - `config/tui.json`: minimal TUI config example.
-- `config/opencode.json`: minimal OpenCode config example with OpenRouter throughput routing, Warp plugin registration, build agent color, and a read-only RTK tee log exception.
+- `config/opencode.json`: minimal OpenCode config example with OpenRouter throughput routing, Warp plugin registration, and build agent color.
 
 ## Agents
 
 This repo includes a versioned copy of your global custom agents:
 
-- `build`: default implementation agent with RTK-aware shell handling.
+- `build`: default implementation agent.
 - `ask`: read-only agent for research, codebase exploration, and web research.
 - `plan`: primary read-only agent for planning, analysis, and audits.
 - `fast`: fast full-access primary agent using GLM 4.7 on OpenRouter Nitro; not available as a subagent.
@@ -85,8 +85,6 @@ bash scripts/install.sh
 
 Then restart your OpenCode tabs. Plugins, agents, commands, and config updates are loaded on startup.
 
-The installer also merges a focused RTK log permission into `~/.config/opencode/opencode.json`: reads under `~/Library/Application Support/rtk/tee/**` are allowed as an external directory, while edits there are denied.
-
 The `/implement` command requires Worktrunk (`wt`). Recommended installation:
 
 ```sh
@@ -94,20 +92,6 @@ brew install worktrunk && wt config shell install
 ```
 
 The `/external-review` command requires Claude Code (`claude`) with `ultrareview` available and authenticated.
-
-## Recommended
-
-I recommend using RTK to save tokens when working with these tools. It is optional, but useful for reducing token usage in larger workflows.
-
-Install RTK from <https://github.com/rtk-ai/rtk>.
-
-For OpenCode, initialize RTK with its OpenCode plugin so command rewrites happen through OpenCode's tool hook:
-
-```sh
-rtk init --global --opencode
-```
-
-The installed shell-capable agents are RTK-aware: if `pnpm lint` appears in the transcript as `rtk lint`, `rtk pnpm lint`, or another RTK-wrapped form, they treat it as the expected execution of `pnpm lint` and do not retry the raw command unless the command failed, RTK reported an error, or raw output is explicitly needed. The transcript may show RTK's post-hook command rather than the original command the agent supplied, so agents should not try to "correct" it just to make the raw command appear. They should not bypass RTK by invoking tools through absolute binary paths. Use `RTK_DISABLED=1 <command>` for that one-off raw rerun.
 
 ## Manual Install
 
@@ -165,21 +149,13 @@ If you do not have a `tui.json`, you can use:
 
 If you already have a `tui.json`, add `"./tui-plugins/status-title.js"` to the existing `plugin` array.
 
-8. Register the build agent color and optional RTK tee log permission in `~/.config/opencode/opencode.json`.
+8. Register the build agent color in `~/.config/opencode/opencode.json`.
 
 ```json
 {
   "agent": {
     "build": {
       "color": "#eab308"
-    }
-  },
-  "permission": {
-    "external_directory": {
-      "~/Library/Application Support/rtk/tee/**": "allow"
-    },
-    "edit": {
-      "~/Library/Application Support/rtk/tee/**": "deny"
     }
   }
 }

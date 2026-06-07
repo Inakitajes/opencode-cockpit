@@ -57,8 +57,3 @@ EOF
 6. Report the branch name and that a fresh OpenCode session was opened in the new worktree.
 
 If the user includes `base <branch>` in `$ARGUMENTS`, pass it to the helper with `--base <branch>`.
-
-RTK handling:
-
-- If shell commands are rewritten to `rtk` forms, treat them as the expected execution of the original command.
-- Do not rerun a raw command only because the transcript shows an `rtk` prefix or compact output.

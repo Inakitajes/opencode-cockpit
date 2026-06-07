@@ -6,14 +6,6 @@
       "color": "#eab308"
     }
   },
-  "permission": {
-    "external_directory": {
-      "~/Library/Application Support/rtk/tee/**": "allow"
-    },
-    "edit": {
-      "~/Library/Application Support/rtk/tee/**": "deny"
-    }
-  },
   "provider": {
     "openrouter": {
       "models": {
