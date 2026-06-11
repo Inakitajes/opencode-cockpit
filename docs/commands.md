@@ -11,7 +11,8 @@ This repo includes global OpenCode commands stored in `commands/*.md`. When inst
 | `/external-review` | `plan` | Current/default plan model | Run Claude Code external review, then adjudicate findings before implementation. |
 | `/write-plan` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Write a repository-aware implementation plan and save it to the preferred plan path. |
 | `/implement` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Start implementation from the current plan in a repo-aware Worktrunk worktree. |
-| `/sync-main` | `build` | Current/default build model | Fetch remote `main`, merge it into the current branch, and resolve real or semantic conflicts. |
+| `/archer-implement` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Start Archer implementation from the current plan in a repo-aware Worktrunk worktree. |
+| `/sync-main` | `build` | Current/default build model | Detect the remote default branch, merge it into the current branch, and resolve real or semantic conflicts. |
 | `/push` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Run relevant tests, create a conventional commit, and push the branch. |
 | `/ship` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Verify tests, push work, open or reuse a PR, and check CI status. |
 
@@ -109,9 +110,36 @@ Requirements:
 - The installer copies helper scripts to `~/.config/opencode/bin/`.
 - On macOS, the helper opens a new Ghostty tab in the front window when possible, falls back to a new Ghostty window, then Terminal. Other systems print the command to run manually.
 
+## `/archer-implement`
+
+Use this after a planning conversation when you want the same isolated Worktrunk workflow as `/implement`, but want Archer to own the implementation instead of a fresh OpenCode session. The command asks OpenCode to inspect the repository instructions first, infer a branch name that follows repository conventions when present, create a Worktrunk worktree with `wt switch --create`, and open a fresh Archer run in that new worktree with a repository-aware handoff prompt.
+
+This command pins `openrouter/z-ai/glm-4.7` for stronger implementation handoff automation. The installer configures OpenRouter throughput routing for this model, which is equivalent to OpenRouter's `:nitro` variant.
+
+Example:
+
+```text
+/archer-implement
+```
+
+With guidance:
+
+```text
+/archer-implement feat/billing-retry base main
+```
+
+The Archer handoff is passed to `archer --prompt-file <path> --dir <worktree>`, with `--base <branch>` when the slash command guidance includes one.
+
+Requirements:
+
+- `wt` must be installed and configured. See <https://github.com/max-sixty/worktrunk>.
+- `archer` must be installed, authenticated/configured, and available in `PATH`.
+- The installer copies helper scripts to `~/.config/opencode/bin/`.
+- On macOS, the helper opens a new Ghostty tab in the front window when possible, falls back to a new Ghostty window, then Terminal. Other systems print the command to run manually.
+
 ## `/sync-main`
 
-Use this when a feature branch has fallen behind remote `main` and should be updated with a merge, not a rebase. It asks OpenCode's default `build` agent to fetch `origin/main`, merge it into the current branch, resolve text conflicts and semantic conflicts while preserving behavior from both sides, and run relevant verification.
+Use this when a feature branch has fallen behind the project's remote default branch and should be updated with a merge, not a rebase. It asks OpenCode's default `build` agent to detect the default branch from the selected remote, fetch it, merge the remote-tracking ref into the current branch, resolve text conflicts and semantic conflicts while preserving behavior from both sides, and run relevant verification.
 
 This command intentionally does not pin a model. It uses whatever model is configured for the `build` agent in the current OpenCode setup.
 
@@ -178,8 +206,10 @@ rm -f ~/.config/opencode/commands/safe-commit.md ~/.config/opencode/commands/rea
 mkdir -p ~/.config/opencode/bin
 cp scripts/bin/opencode-implement.sh ~/.config/opencode/bin/opencode-implement
 cp scripts/bin/opencode-implement-open.sh ~/.config/opencode/bin/opencode-implement-open
+cp scripts/bin/opencode-archer-implement.sh ~/.config/opencode/bin/opencode-archer-implement
+cp scripts/bin/opencode-archer-implement-open.sh ~/.config/opencode/bin/opencode-archer-implement-open
 cp scripts/bin/opencode-external-review.sh ~/.config/opencode/bin/opencode-external-review
-chmod +x ~/.config/opencode/bin/opencode-implement ~/.config/opencode/bin/opencode-implement-open ~/.config/opencode/bin/opencode-external-review
+chmod +x ~/.config/opencode/bin/opencode-implement ~/.config/opencode/bin/opencode-implement-open ~/.config/opencode/bin/opencode-archer-implement ~/.config/opencode/bin/opencode-archer-implement-open ~/.config/opencode/bin/opencode-external-review
 rm -f ~/.config/opencode/bin/opencode-branch ~/.config/opencode/bin/opencode-branch-open
 ```
 
