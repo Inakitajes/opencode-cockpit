@@ -73,8 +73,15 @@ backup_legacy_command "branch"
 
 copy_file "${BIN_SOURCE_DIR}/opencode-implement.sh" "${BIN_TARGET_DIR}/opencode-implement"
 copy_file "${BIN_SOURCE_DIR}/opencode-implement-open.sh" "${BIN_TARGET_DIR}/opencode-implement-open"
+copy_file "${BIN_SOURCE_DIR}/opencode-archer-implement.sh" "${BIN_TARGET_DIR}/opencode-archer-implement"
+copy_file "${BIN_SOURCE_DIR}/opencode-archer-implement-open.sh" "${BIN_TARGET_DIR}/opencode-archer-implement-open"
 copy_file "${BIN_SOURCE_DIR}/opencode-external-review.sh" "${BIN_TARGET_DIR}/opencode-external-review"
-chmod +x "${BIN_TARGET_DIR}/opencode-implement" "${BIN_TARGET_DIR}/opencode-implement-open" "${BIN_TARGET_DIR}/opencode-external-review"
+chmod +x \
+  "${BIN_TARGET_DIR}/opencode-implement" \
+  "${BIN_TARGET_DIR}/opencode-implement-open" \
+  "${BIN_TARGET_DIR}/opencode-archer-implement" \
+  "${BIN_TARGET_DIR}/opencode-archer-implement-open" \
+  "${BIN_TARGET_DIR}/opencode-external-review"
 backup_legacy_bin "opencode-branch"
 backup_legacy_bin "opencode-branch-open"
 
