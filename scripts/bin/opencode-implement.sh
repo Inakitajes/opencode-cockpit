@@ -100,7 +100,11 @@ fi
 CONFIG_DIR="${OPENCODE_CONFIG_DIR:-${HOME}/.config/opencode}"
 PLAN_DIR="${OPENCODE_COCKPIT_TMPDIR:-${CONFIG_DIR}/tmp/opencode-cockpit}"
 mkdir -p "$PLAN_DIR"
-PLAN_FILE="$(mktemp "$PLAN_DIR/implement-plan.XXXXXX.md")"
+# BSD mktemp only substitutes the X placeholder when it ends the template, so
+# the .md suffix is appended after the unique name has been reserved.
+PLAN_STUB="$(mktemp "$PLAN_DIR/implement-plan.XXXXXX")"
+PLAN_FILE="${PLAN_STUB}.md"
+mv "$PLAN_STUB" "$PLAN_FILE"
 cat > "$PLAN_FILE"
 
 if [ ! -s "$PLAN_FILE" ]; then

@@ -8,7 +8,7 @@ Local OpenCode customizations: plugins, agents, commands, scripts, and config sn
 - `plugins/server/session-notifications.js`: server plugin that sends local macOS notifications.
 - `agents/*.md`: versioned global custom agents and local overrides for built-in agents.
 - `commands/*.md`: versioned global custom slash commands.
-- `scripts/bin/*`: local helpers for integrations like Worktrunk, Archer, and Claude Code review.
+- `scripts/bin/*`: local helpers for integrations like Worktrunk, Convoy, and Claude Code review.
 - `raycast/prompt-stash`: Raycast extension that manages a Prompt Stash: a FIFO queue for future prompts that should stay outside the OpenCode agent loop until you explicitly paste them.
 - `docs/agents.md`: documentation for the included agents.
 - `docs/commands.md`: documentation for the included commands.
@@ -33,11 +33,11 @@ See `docs/agents.md` for model, permission, and usage details.
 
 ## Stack
 
-The local programming stack is built around OpenCode, Worktrunk (`wt`), Archer, and Ghostty:
+The local programming stack is built around OpenCode, Worktrunk (`wt`), Convoy, and Ghostty:
 
 - OpenCode as the cockpit for agents, commands, and plugins.
-- Worktrunk for starting implementations in isolated worktrees from plans with `/write-plan`, `/implement`, and `/archer-implement`.
-- Archer as an optional implementation pipeline launched from `/archer-implement`.
+- Worktrunk for starting implementations in isolated worktrees from plans with `/write-plan`, `/implement`, and `/convoy`.
+- Convoy as an optional multi-agent pipeline launched from `/convoy`.
 - Ghostty as the main terminal for running OpenCode sessions.
 - Raycast Prompt Stash as an out-of-band prompt queue for capturing follow-up prompts while OpenCode is still working. It avoids sending those prompts into the current agentic loop until you intentionally pop one into the focused input.
 
@@ -52,7 +52,7 @@ This repo includes global custom commands:
 - `/external-review`: runs Claude Code `ultrareview`, then has OpenCode adjudicate the findings before any implementation.
 - `/write-plan`: writes a repository-aware implementation plan to the preferred plan path.
 - `/implement`: starts implementation from the current plan in a repo-aware Worktrunk worktree and opens a clean OpenCode session there.
-- `/archer-implement`: starts implementation from the current plan in a repo-aware Worktrunk worktree and opens a clean Archer run there.
+- `/convoy`: starts a Convoy pipeline from the current plan in a repo-aware Worktrunk worktree and opens a clean Convoy run there.
 - `/sync-main`: detects the remote default branch, merges it into the current branch, and resolves real or semantic conflicts.
 - `/push`: runs relevant tests/checks, creates a conventional commit, and pushes.
 - `/ship`: prepares the branch, pushes, opens or reuses a PR, and verifies checks.
@@ -87,13 +87,13 @@ bash scripts/install.sh
 
 Then restart your OpenCode tabs. Plugins, agents, commands, and config updates are loaded on startup.
 
-The `/implement` and `/archer-implement` commands require Worktrunk (`wt`). Recommended installation:
+The `/implement` and `/convoy` commands require Worktrunk (`wt`). Recommended installation:
 
 ```sh
 brew install worktrunk && wt config shell install
 ```
 
-The `/archer-implement` command also requires `archer` to be installed and available in `PATH`.
+The `/convoy` command also requires `convoy` to be installed and available in `PATH`.
 
 The `/external-review` command requires Claude Code (`claude`) with `ultrareview` available and authenticated.
 
@@ -135,11 +135,10 @@ rm -f ~/.config/opencode/commands/safe-commit.md ~/.config/opencode/commands/rea
 ```sh
 cp scripts/bin/opencode-implement.sh ~/.config/opencode/bin/opencode-implement
 cp scripts/bin/opencode-implement-open.sh ~/.config/opencode/bin/opencode-implement-open
-cp scripts/bin/opencode-archer-implement.sh ~/.config/opencode/bin/opencode-archer-implement
-cp scripts/bin/opencode-archer-implement-open.sh ~/.config/opencode/bin/opencode-archer-implement-open
+cp scripts/bin/opencode-convoy.sh ~/.config/opencode/bin/opencode-convoy
 cp scripts/bin/opencode-external-review.sh ~/.config/opencode/bin/opencode-external-review
-chmod +x ~/.config/opencode/bin/opencode-implement ~/.config/opencode/bin/opencode-implement-open ~/.config/opencode/bin/opencode-archer-implement ~/.config/opencode/bin/opencode-archer-implement-open ~/.config/opencode/bin/opencode-external-review
-rm -f ~/.config/opencode/bin/opencode-branch ~/.config/opencode/bin/opencode-branch-open
+chmod +x ~/.config/opencode/bin/opencode-implement ~/.config/opencode/bin/opencode-implement-open ~/.config/opencode/bin/opencode-convoy ~/.config/opencode/bin/opencode-external-review
+rm -f ~/.config/opencode/bin/opencode-branch ~/.config/opencode/bin/opencode-branch-open ~/.config/opencode/bin/opencode-archer-implement ~/.config/opencode/bin/opencode-archer-implement-open
 ```
 
 7. Register the TUI plugin in `~/.config/opencode/tui.json`.
@@ -233,13 +232,12 @@ rm -f ~/.config/opencode/commands/external-review.md
 rm -f ~/.config/opencode/commands/push.md
 rm -f ~/.config/opencode/commands/ship.md
 rm -f ~/.config/opencode/commands/implement.md
-rm -f ~/.config/opencode/commands/archer-implement.md
+rm -f ~/.config/opencode/commands/convoy.md
 rm -f ~/.config/opencode/commands/write-plan.md
 rm -f ~/.config/opencode/commands/branch.md
 rm -f ~/.config/opencode/bin/opencode-implement
 rm -f ~/.config/opencode/bin/opencode-implement-open
-rm -f ~/.config/opencode/bin/opencode-archer-implement
-rm -f ~/.config/opencode/bin/opencode-archer-implement-open
+rm -f ~/.config/opencode/bin/opencode-convoy
 rm -f ~/.config/opencode/bin/opencode-external-review
 rm -f ~/.config/opencode/bin/opencode-branch
 rm -f ~/.config/opencode/bin/opencode-branch-open

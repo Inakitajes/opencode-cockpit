@@ -11,7 +11,7 @@ This repo includes global OpenCode commands stored in `commands/*.md`. When inst
 | `/external-review` | `plan` | Current/default plan model | Run Claude Code external review, then adjudicate findings before implementation. |
 | `/write-plan` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Write a repository-aware implementation plan and save it to the preferred plan path. |
 | `/implement` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Start implementation from the current plan in a repo-aware Worktrunk worktree. |
-| `/archer-implement` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Start Archer implementation from the current plan in a repo-aware Worktrunk worktree. |
+| `/convoy` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Run a Convoy pipeline from the current plan in a repo-aware Worktrunk worktree. |
 | `/sync-main` | `build` | Current/default build model | Detect the remote default branch, merge it into the current branch, and resolve real or semantic conflicts. |
 | `/push` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Run relevant tests, create a conventional commit, and push the branch. |
 | `/ship` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Verify tests, push work, open or reuse a PR, and check CI status. |
@@ -110,32 +110,36 @@ Requirements:
 - The installer copies helper scripts to `~/.config/opencode/bin/`.
 - On macOS, the helper opens a new Ghostty tab in the front window when possible, falls back to a new Ghostty window, then Terminal. Other systems print the command to run manually.
 
-## `/archer-implement`
+## `/convoy`
 
-Use this after a planning conversation when you want the same isolated Worktrunk workflow as `/implement`, but want Archer to own the implementation instead of a fresh OpenCode session. The command asks OpenCode to inspect the repository instructions first, infer a branch name that follows repository conventions when present, create a Worktrunk worktree with `wt switch --create`, and open a fresh Archer run in that new worktree with a repository-aware handoff prompt.
+Use this after a planning conversation when you want the same isolated Worktrunk workflow as `/implement`, but want a Convoy pipeline to own the work instead of a fresh OpenCode session. The command asks OpenCode to inspect the repository instructions first, infer a branch name that follows repository conventions when present, create a Worktrunk worktree with `wt switch --create`, and open a fresh Convoy run in that new worktree with a repository-aware PRD.
 
-This command pins `openrouter/z-ai/glm-4.7` for stronger implementation handoff automation. The installer configures OpenRouter throughput routing for this model, which is equivalent to OpenRouter's `:nitro` variant.
+Convoy runs a pipeline of specialized agents and leaves one commit per phase. The default `implement` pipeline is `implementer` -> `patterns` -> `security` -> `design` -> `tests` -> `adversarial`, so the PRD is written as a specification, not as a step-by-step handoff: pattern alignment, security auditing, tests, and adversarial review are already part of the run. Convoy also attaches `.convoy/rules.md`, `AGENTS.md`, and `CLAUDE.md` to every phase automatically, so the PRD does not repeat them.
+
+This command pins `openrouter/z-ai/glm-4.7` for stronger PRD automation. The installer configures OpenRouter throughput routing for this model, which is equivalent to OpenRouter's `:nitro` variant.
 
 Example:
 
 ```text
-/archer-implement
+/convoy
 ```
 
 With guidance:
 
 ```text
-/archer-implement feat/billing-retry base main
+/convoy feat/billing-retry base main pipeline ultra-implement
 ```
 
-The Archer handoff is passed to `archer --prompt-file <path> --dir <worktree>`, with `--base <branch>` when the slash command guidance includes one.
+The PRD is passed to `convoy --prompt-file <path> --dir <worktree>`, with `--base <branch>` and `--pipeline <name>` when the slash command guidance includes them. Convoy defaults to the `implement` pipeline; the other built-ins are `implement-lite`, `ultra-implement`, `refine`, `ultra-refine`, and the report-only `review`, `review-lite`, `review-cc`, `hunter`, and `hunter-max`. Any pipeline defined in `~/.convoy/config.yaml` or `.convoy/config.yaml` works too.
+
+The run does not start unattended: Convoy renders the resolved plan (pipeline, models, gateway) in the new tab and waits at `Start run? [y/N]`.
 
 Requirements:
 
 - `wt` must be installed and configured. See <https://github.com/max-sixty/worktrunk>.
-- `archer` must be installed, authenticated/configured, and available in `PATH`.
+- `convoy` must be installed, authenticated/configured, and available in `PATH`. See <https://github.com/Inakitajes/convoy>.
 - The installer copies helper scripts to `~/.config/opencode/bin/`.
-- On macOS, the helper opens a new Ghostty tab in the front window when possible, falls back to a new Ghostty window, then Terminal. Other systems print the command to run manually.
+- On macOS, the helper opens a new Ghostty tab in the front window, falling back to a new Ghostty window. Other systems print the command to run manually.
 
 ## `/sync-main`
 
@@ -202,15 +206,14 @@ Or copy commands and helpers manually:
 ```sh
 mkdir -p ~/.config/opencode/commands
 cp commands/*.md ~/.config/opencode/commands/
-rm -f ~/.config/opencode/commands/safe-commit.md ~/.config/opencode/commands/ready-pr.md ~/.config/opencode/commands/branch.md
+rm -f ~/.config/opencode/commands/safe-commit.md ~/.config/opencode/commands/ready-pr.md ~/.config/opencode/commands/branch.md ~/.config/opencode/commands/archer-implement.md
 mkdir -p ~/.config/opencode/bin
 cp scripts/bin/opencode-implement.sh ~/.config/opencode/bin/opencode-implement
 cp scripts/bin/opencode-implement-open.sh ~/.config/opencode/bin/opencode-implement-open
-cp scripts/bin/opencode-archer-implement.sh ~/.config/opencode/bin/opencode-archer-implement
-cp scripts/bin/opencode-archer-implement-open.sh ~/.config/opencode/bin/opencode-archer-implement-open
+cp scripts/bin/opencode-convoy.sh ~/.config/opencode/bin/opencode-convoy
 cp scripts/bin/opencode-external-review.sh ~/.config/opencode/bin/opencode-external-review
-chmod +x ~/.config/opencode/bin/opencode-implement ~/.config/opencode/bin/opencode-implement-open ~/.config/opencode/bin/opencode-archer-implement ~/.config/opencode/bin/opencode-archer-implement-open ~/.config/opencode/bin/opencode-external-review
-rm -f ~/.config/opencode/bin/opencode-branch ~/.config/opencode/bin/opencode-branch-open
+chmod +x ~/.config/opencode/bin/opencode-implement ~/.config/opencode/bin/opencode-implement-open ~/.config/opencode/bin/opencode-convoy ~/.config/opencode/bin/opencode-external-review
+rm -f ~/.config/opencode/bin/opencode-branch ~/.config/opencode/bin/opencode-branch-open ~/.config/opencode/bin/opencode-archer-implement ~/.config/opencode/bin/opencode-archer-implement-open
 ```
 
 Restart OpenCode after installing or updating commands.
