@@ -58,7 +58,9 @@ if [ "${1:-}" = "--open" ]; then
     exit 127
   fi
 
-  CONVOY_ARGS=(--prompt-file "$PLAN_FILE" --dir "$WORKTREE_DIR")
+  # Worktrunk already created the isolated worktree this runs in, so Convoy's
+  # own default (a second worktree under ~/.convoy/worktrees) is turned off.
+  CONVOY_ARGS=(--prompt-file "$PLAN_FILE" --dir "$WORKTREE_DIR" --no-worktree)
   if [ -n "$BASE" ]; then
     CONVOY_ARGS+=(--base "$BASE")
   fi

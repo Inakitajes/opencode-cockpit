@@ -4,7 +4,7 @@ agent: fast
 model: "openrouter/z-ai/glm-4.7"
 ---
 
-Run a Convoy pipeline against the current plan by creating a fresh Worktrunk worktree, then opening a clean Convoy run in that new worktree with a repository-aware PRD.
+Run a Convoy pipeline against the current plan by creating a fresh Worktrunk worktree, then opening a clean Convoy run in that new worktree with a repository-aware PRD. Convoy runs directly in the Worktrunk worktree with `--no-worktree`, so it does not create a second worktree of its own.
 
 Use `$ARGUMENTS` as optional guidance for branch name, branch type, base branch, pipeline, issue key, or saved plan path. If the user provides an explicit branch name, prefer it only when it matches the repository conventions.
 
@@ -15,7 +15,7 @@ Rules:
 - Inspect repository instructions first. Read `AGENTS.md`, `CLAUDE.md`, `README*`, and any referenced plan file before deciding the branch name or workflow.
 - Follow repository-specific branch naming, setup, and verification rules when they exist.
 - Do not paste `AGENTS.md`, `CLAUDE.md`, or `.convoy/rules.md` into the PRD. Convoy attaches those files to every phase automatically. Reference them and add only what is missing.
-- Use Worktrunk through the `wt` command only.
+- Use Worktrunk through the `wt` command only. Worktrunk owns the worktree; Convoy runs inside it and never creates one.
 - Do not use plain `git worktree` unless the user explicitly asks for a fallback.
 - If the repository requires an issue key or ticket id in branch names and it is missing, stop and ask for it before creating the worktree.
 - Do not modify project files or commit in the current worktree. Convoy commits once per phase inside the new worktree, which is expected.
@@ -78,7 +78,7 @@ Workflow:
 EOF
 ```
 
-6. Report the branch name and that a new Ghostty tab opened in the fresh worktree. Tell the user the tab shows the resolved run plan (pipeline, models, gateway) and waits at `Start run? [y/N]`, so nothing runs until they confirm it there.
+6. Report the branch name and that a new Ghostty tab opened in the fresh worktree. Tell the user the tab shows the resolved run plan (pipeline, models, gateway) and waits at `Start run? [y/N]`, so nothing runs until they confirm it there. There is no branch naming step: the run uses the branch Worktrunk already created.
 
 Arguments:
 

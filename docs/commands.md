@@ -130,9 +130,9 @@ With guidance:
 /convoy feat/billing-retry base main pipeline ultra-implement
 ```
 
-The PRD is passed to `convoy --prompt-file <path> --dir <worktree>`, with `--base <branch>` and `--pipeline <name>` when the slash command guidance includes them. Convoy defaults to the `implement` pipeline; the other built-ins are `implement-lite`, `ultra-implement`, `refine`, `ultra-refine`, and the report-only `review`, `review-lite`, `review-cc`, `hunter`, and `hunter-max`. Any pipeline defined in `~/.convoy/config.yaml` or `.convoy/config.yaml` works too.
+The PRD is passed to `convoy --prompt-file <path> --dir <worktree> --no-worktree`, with `--base <branch>` and `--pipeline <name>` when the slash command guidance includes them. `--no-worktree` is always passed because Worktrunk already created the isolated worktree; without it Convoy would isolate the run again under `~/.convoy/worktrees/<branch>`, which is its default, and the command would end up with two worktrees. Convoy defaults to the `implement` pipeline; the other built-ins are `implement-lite`, `ultra-implement`, `refine`, `ultra-refine`, and the report-only `review`, `review-lite`, `review-cc`, `hunter`, and `hunter-max`. Any pipeline defined in `~/.convoy/config.yaml` or `.convoy/config.yaml` works too.
 
-The run does not start unattended: Convoy renders the resolved plan (pipeline, models, gateway) in the new tab and waits at `Start run? [y/N]`.
+The run does not start unattended: Convoy renders the resolved plan (pipeline, models, gateway) in the new tab and waits at `Start run? [y/N]`. Convoy's branch naming step is skipped, since the run commits on the branch Worktrunk created. `convoy finish` still works from inside that tab; only `convoy finish --branch <name>` from the main checkout does not apply, because it looks for a Convoy-managed worktree under `~/.convoy/worktrees/`.
 
 Requirements:
 
