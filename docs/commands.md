@@ -124,7 +124,17 @@ Example:
 /convoy
 ```
 
-With guidance:
+Picking a pipeline:
+
+```text
+/convoy ship
+/convoy pipeline ultra-implement
+/convoy --pipeline review-lite
+```
+
+All three forms work. A bare argument that matches a known pipeline is read as a pipeline, not as a branch name. The command resolves the list by running `opencode-convoy --list-pipelines`, which asks Convoy itself, so project and global config pipelines are included and nothing is hardcoded. A name that is not on the list stops the command before the worktree is created, showing the available pipelines, instead of quietly running the default.
+
+With full guidance:
 
 ```text
 /convoy feat/billing-retry base main pipeline ultra-implement

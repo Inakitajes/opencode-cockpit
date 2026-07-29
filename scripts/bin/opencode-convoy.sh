@@ -3,6 +3,8 @@ set -euo pipefail
 
 usage() {
   printf 'Usage: %s [--base <branch>] [--pipeline <name>] <branch-name>\n' "$(basename "$0")" >&2
+  printf '       %s --list-pipelines\n' "$(basename "$0")" >&2
+  printf 'Flags may appear before or after <branch-name>.\n' >&2
   printf 'Reads the Convoy PRD from stdin.\n' >&2
 }
 
@@ -18,6 +20,26 @@ resolve_convoy_bin() {
   command -v convoy || true
 }
 
+# Convoy has no subcommand that lists pipelines, but rejecting an impossible
+# name makes it print every pipeline it resolved from the project config, the
+# global config, and its built-ins. --plan guarantees nothing is created or run.
+list_pipelines() {
+  local convoy_bin dir raw
+  convoy_bin="$(resolve_convoy_bin)"
+  if [ -z "$convoy_bin" ]; then
+    return 0
+  fi
+  dir="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+  raw="$("$convoy_bin" probe \
+    --pipeline __opencode_convoy_probe__ \
+    --plan --no-confirm --no-tui \
+    --dir "$dir" --no-worktree </dev/null 2>&1 || true)"
+  printf '%s\n' "$raw" \
+    | sed -n 's/.*(available: \([^)]*\)).*/\1/p' \
+    | tr ',' '\n' \
+    | sed 's/^[[:space:]]*//; s/[[:space:]]*$//; /^$/d'
+}
+
 resolve_login_shell() {
   local shell="${OPENCODE_CONVOY_SHELL:-${OPENCODE_IMPLEMENT_SHELL:-${SHELL:-/bin/bash}}}"
   if [ ! -x "$shell" ]; then
@@ -29,6 +51,17 @@ resolve_login_shell() {
   esac
   printf '%s' "$shell"
 }
+
+# Discovery mode. The slash command calls this to resolve a pipeline name from
+# its arguments without hardcoding a list that would drift from the configs.
+if [ "${1:-}" = "--list-pipelines" ]; then
+  if [ -z "$(resolve_convoy_bin)" ]; then
+    printf 'convoy was not found in PATH.\n' >&2
+    exit 127
+  fi
+  list_pipelines
+  exit 0
+fi
 
 # Opener mode. Worktrunk runs this inside the freshly created worktree, so the
 # working directory is already the target repo root that Convoy needs.
@@ -128,6 +161,7 @@ fi
 
 BASE=""
 PIPELINE=""
+POSITIONAL=()
 while [ "$#" -gt 0 ]; do
   case "$1" in
     -b|--base)
@@ -138,6 +172,10 @@ while [ "$#" -gt 0 ]; do
       BASE="$2"
       shift 2
       ;;
+    --base=*)
+      BASE="${1#--base=}"
+      shift
+      ;;
     -p|--pipeline)
       if [ "$#" -lt 2 ]; then
         usage
@@ -146,13 +184,20 @@ while [ "$#" -gt 0 ]; do
       PIPELINE="$2"
       shift 2
       ;;
+    --pipeline=*)
+      PIPELINE="${1#--pipeline=}"
+      shift
+      ;;
     -h|--help)
       usage
       exit 0
       ;;
     --)
       shift
-      break
+      while [ "$#" -gt 0 ]; do
+        POSITIONAL+=("$1")
+        shift
+      done
       ;;
     -* )
       printf 'Unknown option: %s\n' "$1" >&2
@@ -160,17 +205,28 @@ while [ "$#" -gt 0 ]; do
       exit 2
       ;;
     *)
-      break
+      # Scanning continues past the branch name so that a trailing
+      # "--pipeline <name>" is honored instead of being dropped in silence.
+      POSITIONAL+=("$1")
+      shift
       ;;
   esac
 done
 
-if [ "$#" -lt 1 ]; then
+if [ "${#POSITIONAL[@]}" -eq 0 ]; then
+  printf 'Missing <branch-name>.\n' >&2
   usage
   exit 2
 fi
 
-RAW_BRANCH="$1"
+if [ "${#POSITIONAL[@]}" -gt 1 ]; then
+  printf 'Expected exactly one <branch-name>, got %d: %s\n' "${#POSITIONAL[@]}" "${POSITIONAL[*]}" >&2
+  printf 'Pass modifiers as --pipeline <name> and --base <branch>, not as bare words.\n' >&2
+  usage
+  exit 2
+fi
+
+RAW_BRANCH="${POSITIONAL[0]}"
 
 if ! command -v wt >/dev/null 2>&1; then
   printf 'Worktrunk is required but wt was not found in PATH.\n' >&2
@@ -187,6 +243,19 @@ fi
 if ! git rev-parse --show-toplevel >/dev/null 2>&1; then
   printf 'This command must be run inside a git repository.\n' >&2
   exit 1
+fi
+
+# Validated before the worktree exists, so a typo cannot leave an orphan
+# worktree behind while Convoy fails later in a separate terminal tab.
+if [ -n "$PIPELINE" ]; then
+  AVAILABLE_PIPELINES="$(list_pipelines)"
+  # An empty list means the probe could not answer, so validation is skipped
+  # rather than blocking a run Convoy itself would accept.
+  if [ -n "$AVAILABLE_PIPELINES" ] && ! printf '%s\n' "$AVAILABLE_PIPELINES" | grep -qxF "$PIPELINE"; then
+    printf 'Unknown pipeline: %s\n' "$PIPELINE" >&2
+    printf 'Available pipelines: %s\n' "$(printf '%s' "$AVAILABLE_PIPELINES" | tr '\n' ' ')" >&2
+    exit 2
+  fi
 fi
 
 BRANCH="$(printf '%s' "$RAW_BRANCH" | tr '[:upper:]' '[:lower:]')"

@@ -26,16 +26,30 @@ Rules:
 
 Workflow:
 
-1. Inspect the current branch and dirty state with `git status --short --branch`.
-2. Determine the plan source from the current conversation and any referenced saved plan file.
-3. Generate a safe branch name from repository rules first and from the plan second.
+1. Resolve the requested pipeline and base branch from `$ARGUMENTS` before anything else. The PRD shape depends on the pipeline, so this cannot be left until the end.
+
+   - List the pipelines this repository actually resolves:
+
+     ```sh
+     ~/.config/opencode/bin/opencode-convoy --list-pipelines
+     ```
+
+   - Accept the pipeline in any of these forms: a bare name (`/convoy ship`), the phrase `pipeline <name>`, or the flag `--pipeline <name>`.
+   - A token that matches a listed pipeline is a pipeline request, not a branch name.
+   - If `$ARGUMENTS` asks for a pipeline that is not in the list, stop and ask which one to use, showing the available names. Never fall back to the default pipeline in silence.
+   - Accept the base branch as `base <branch>` or `--base <branch>`.
+   - When no pipeline is requested, Convoy uses `implement`.
+
+2. Inspect the current branch and dirty state with `git status --short --branch`.
+3. Determine the plan source from the current conversation and any referenced saved plan file.
+4. Generate a safe branch name from repository rules first and from the plan second.
    - If the repository documents a branch naming convention, follow it.
    - Otherwise use this fallback style:
      - `feat/<short-feature-name>` for new functionality.
      - `fix/<short-bug-name>` for bug fixes.
      - `refactor/<short-area-name>` for refactors.
      - `chore/<short-task-name>` for maintenance.
-4. Write the PRD that Convoy will run. Use this structure:
+5. Write the PRD that Convoy will run. Use this structure:
 
 ```md
 # Goal
@@ -68,19 +82,16 @@ Workflow:
 <known risks, unknowns, and decisions the run should surface instead of guessing>
 ```
 
-   If the requested pipeline is report-only (`review`, `review-lite`, `review-cc`, `hunter`, `hunter-max`), scope the audit instead of describing an implementation: state what to review, against which base, and what counts as a blocking finding.
+   If the pipeline resolved in step 1 is report-only (`review`, `review-lite`, `review-cc`, `hunter`, `hunter-max`), scope the audit instead of describing an implementation: state what to review, against which base, and what counts as a blocking finding.
 
-5. Run the installed helper with the branch name and pass the PRD on stdin:
+6. Run the installed helper with the resolved flags and the branch name, and pass the PRD on stdin:
 
 ```sh
-~/.config/opencode/bin/opencode-convoy '<branch-name>' <<'EOF'
+~/.config/opencode/bin/opencode-convoy --pipeline '<pipeline>' --base '<base>' '<branch-name>' <<'EOF'
 <PRD>
 EOF
 ```
 
-6. Report the branch name and that a new Ghostty tab opened in the fresh worktree. Tell the user the tab shows the resolved run plan (pipeline, models, gateway) and waits at `Start run? [y/N]`, so nothing runs until they confirm it there. There is no branch naming step: the run uses the branch Worktrunk already created.
+   Omit `--pipeline` or `--base` entirely when the user did not ask for them. With neither, the call is `~/.config/opencode/bin/opencode-convoy '<branch-name>' <<'EOF' ... EOF`. Never substitute a placeholder like `<pipeline>` literally.
 
-Arguments:
-
-- `base <branch>` in `$ARGUMENTS` is passed to the helper as `--base <branch>`.
-- `pipeline <name>` in `$ARGUMENTS` is passed to the helper as `--pipeline <name>`. Convoy defaults to `implement`.
+7. Report the branch name, the pipeline the run will use, and that a new Ghostty tab opened in the fresh worktree. Tell the user the tab shows the resolved run plan (pipeline, models, gateway) and waits at `Start run? [y/N]`, so nothing runs until they confirm it there. There is no branch naming step: the run uses the branch Worktrunk already created.
