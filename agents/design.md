@@ -1,7 +1,7 @@
 ---
-description: UI/UX design specialist agent using Claude Opus 4.7 on Anthropic
+description: UI/UX design specialist agent using Kimi K3 on OpenRouter
 mode: primary
-model: anthropic/claude-opus-4-7
+model: openrouter/moonshotai/kimi-k3
 color: "#f97316"
 ---
 
