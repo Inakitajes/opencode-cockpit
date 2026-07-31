@@ -2,6 +2,8 @@
 
 This repo includes global OpenCode commands stored in `commands/*.md`. When installed, each file becomes a slash command in the OpenCode TUI.
 
+`/usage` is the exception: it is registered by the TUI plugin `plugins/tui/session-usage.js`, not by a prompt file, so it runs locally without a model turn. It is documented at the end of this page.
+
 ## Commands
 
 | Command | Agent | Model | Purpose |
@@ -15,6 +17,7 @@ This repo includes global OpenCode commands stored in `commands/*.md`. When inst
 | `/sync-main` | `build` | Current/default build model | Detect the remote default branch, merge it into the current branch, and resolve real or semantic conflicts. |
 | `/push` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Run relevant tests, create a conventional commit, and push the branch. |
 | `/ship` | `fast` | `openrouter/z-ai/glm-4.7` with throughput routing | Verify tests, push work, open or reuse a PR, and check CI status. |
+| `/usage` | None (TUI plugin) | None | Token and cost breakdown of the current session, by model and by tool. |
 
 ## `/audit`
 
@@ -202,6 +205,31 @@ Example:
 ```
 
 The optional argument can provide PR title, base branch, or review context.
+
+## `/usage`
+
+Use this when you want to know what the session you are in has actually consumed. It takes no arguments and always reports the session you are currently viewing. Alias: `/tokens`.
+
+```text
+/usage
+```
+
+The dialog has four blocks:
+
+- **Resumen**: total tokens and estimated cost, plus the cost OpenCode itself reports.
+- **Modelos**: one row per `provider/model#variant`, with messages, share of tokens, and the input / output / reasoning / cache read split.
+- **Tools**: one row per tool, with call count, share, output size, wall time, and errors.
+- **Origen**: which catalog priced the session, how many assistant responses it took, and how long it ran.
+
+Notes on the numbers:
+
+- The estimate uses OpenCode's own formula: `input + (output + reasoning) + cache read + cache write`, each at its own rate. Reasoning bills at the output rate and is tracked separately from `output`.
+- Prices come from the running provider catalog first, then from OpenCode's models.dev cache at `~/.cache/opencode/models.json`. A gateway model such as `openrouter/openai/gpt-5.6-sol` falls back to the upstream model's price when the gateway does not publish one.
+- A `≥` before the total means some model had no price in any catalog, so the real figure is higher.
+- `OpenCode reporta $0.00` is expected on OAuth subscription providers: they do not bill per token, so only the estimate is meaningful there.
+- On a Convoy session, an `advisor` row is added from `~/.convoy/runs/<runID>/logs/<phase>.*.json`. Those calls happen outside the OpenCode session, and on an advised pipeline they can cost several times the executor despite being a rounding error in tokens, because each advisor call resends the transcript uncached.
+
+Because it needs a session to measure, running it from the home screen just warns and does nothing.
 
 ## Install
 

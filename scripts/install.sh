@@ -6,6 +6,7 @@ CONFIG_DIR="${OPENCODE_CONFIG_DIR:-${HOME}/.config/opencode}"
 
 SERVER_PLUGIN_SOURCE="${ROOT_DIR}/plugins/server/session-notifications.js"
 TUI_PLUGIN_SOURCE="${ROOT_DIR}/plugins/tui/status-title.js"
+TUI_USAGE_PLUGIN_SOURCE="${ROOT_DIR}/plugins/tui/session-usage.js"
 AGENTS_SOURCE_DIR="${ROOT_DIR}/agents"
 COMMANDS_SOURCE_DIR="${ROOT_DIR}/commands"
 BIN_SOURCE_DIR="${ROOT_DIR}/scripts/bin"
@@ -18,8 +19,10 @@ BIN_TARGET_DIR="${CONFIG_DIR}/bin"
 
 SERVER_PLUGIN_TARGET="${SERVER_PLUGIN_DIR}/session-notifications.js"
 TUI_PLUGIN_TARGET="${TUI_PLUGIN_DIR}/status-title.js"
+TUI_USAGE_PLUGIN_TARGET="${TUI_PLUGIN_DIR}/session-usage.js"
 TUI_JSON="${CONFIG_DIR}/tui.json"
 TUI_ENTRY="./tui-plugins/status-title.js"
+TUI_USAGE_ENTRY="./tui-plugins/session-usage.js"
 OPENCODE_JSON="${CONFIG_DIR}/opencode.json"
 OPENCODE_PLUGIN_ENTRY="@warp-dot-dev/opencode-warp"
 BUILD_AGENT_COLOR="#eab308"
@@ -58,6 +61,7 @@ backup_legacy_bin() {
 
 copy_file "${SERVER_PLUGIN_SOURCE}" "${SERVER_PLUGIN_TARGET}"
 copy_file "${TUI_PLUGIN_SOURCE}" "${TUI_PLUGIN_TARGET}"
+copy_file "${TUI_USAGE_PLUGIN_SOURCE}" "${TUI_USAGE_PLUGIN_TARGET}"
 
 for agent in "${AGENTS_SOURCE_DIR}"/*.md; do
   copy_file "${agent}" "${AGENTS_TARGET_DIR}/$(basename "${agent}")"
@@ -87,11 +91,11 @@ backup_legacy_bin "opencode-archer-implement"
 backup_legacy_bin "opencode-archer-implement-open"
 
 if command -v node >/dev/null 2>&1; then
-  node - "${TUI_JSON}" "${TUI_ENTRY}" <<'NODE'
+  node - "${TUI_JSON}" "${TUI_ENTRY}" "${TUI_USAGE_ENTRY}" <<'NODE'
 const fs = require("fs")
 
 const file = process.argv[2]
-const entry = process.argv[3]
+const entries = process.argv.slice(3)
 const schema = "https://opencode.ai/tui.json"
 
 let config = { $schema: schema }
@@ -104,7 +108,7 @@ if (fs.existsSync(file)) {
     config = raw.trim() ? JSON.parse(raw) : { $schema: schema }
   } catch (error) {
     console.error(`Could not update ${file}: it is not plain JSON.`)
-    console.error(`Add ${JSON.stringify(entry)} to the plugin array manually.`)
+    console.error(`Add ${entries.map((item) => JSON.stringify(item)).join(", ")} to the plugin array manually.`)
     process.exit(2)
   }
 }
@@ -116,10 +120,15 @@ if (!config || typeof config !== "object" || Array.isArray(config)) {
 if (!config.$schema) config.$schema = schema
 if (!Array.isArray(config.plugin)) config.plugin = []
 
-const exists = config.plugin.some((item) => item === entry || (Array.isArray(item) && item[0] === entry))
-if (!exists) config.plugin.push(entry)
+let added = false
+for (const entry of entries) {
+  const exists = config.plugin.some((item) => item === entry || (Array.isArray(item) && item[0] === entry))
+  if (exists) continue
+  config.plugin.push(entry)
+  added = true
+}
 
-if (exists && existed) process.exit(0)
+if (!added && existed) process.exit(0)
 
 if (existed) {
   const backup = `${file}.bak.${new Date().toISOString().replace(/[-:TZ.]/g, "").slice(0, 14)}`
@@ -130,9 +139,9 @@ fs.writeFileSync(file, `${JSON.stringify(config, null, 2)}\n`)
 NODE
 else
   if [ ! -f "${TUI_JSON}" ]; then
-    printf '{\n  "$schema": "https://opencode.ai/tui.json",\n  "plugin": ["./tui-plugins/status-title.js"]\n}\n' > "${TUI_JSON}"
+    printf '{\n  "$schema": "https://opencode.ai/tui.json",\n  "plugin": ["%s", "%s"]\n}\n' "${TUI_ENTRY}" "${TUI_USAGE_ENTRY}" > "${TUI_JSON}"
   else
-    printf 'Node.js is not available. Add "%s" to the plugin array in %s manually.\n' "${TUI_ENTRY}" "${TUI_JSON}" >&2
+    printf 'Node.js is not available. Add "%s" and "%s" to the plugin array in %s manually.\n' "${TUI_ENTRY}" "${TUI_USAGE_ENTRY}" "${TUI_JSON}" >&2
   fi
 fi
 

@@ -5,6 +5,7 @@ Local OpenCode customizations: plugins, agents, commands, scripts, and config sn
 ## What's Included
 
 - `plugins/tui/status-title.js`: TUI plugin that updates the terminal tab/window title.
+- `plugins/tui/session-usage.js`: TUI plugin that adds `/usage`, a local token and cost breakdown of the current session.
 - `plugins/server/session-notifications.js`: server plugin that sends local macOS notifications.
 - `agents/*.md`: versioned global custom agents and local overrides for built-in agents.
 - `commands/*.md`: versioned global custom slash commands.
@@ -57,6 +58,10 @@ This repo includes global custom commands:
 - `/push`: runs relevant tests/checks, creates a conventional commit, and pushes.
 - `/ship`: prepares the branch, pushes, opens or reuses a PR, and verifies checks.
 
+Plus one command that comes from a TUI plugin instead of a prompt file:
+
+- `/usage` (alias `/tokens`): token and cost breakdown of the current session, by model and by tool. Runs locally, so it spends no tokens to report them.
+
 See `docs/commands.md` for usage and argument details.
 
 ## Status
@@ -76,6 +81,19 @@ On macOS, the server plugin shows local notifications. When running inside Ghost
 - `OpenCode 🔴`: the session hit an error.
 
 Notifications are best effort. If macOS blocks them, OpenCode will keep working.
+
+## Session Usage
+
+`/usage` opens a dialog with the current session's totals, one row per model and one row per tool. It reads the session over the local API and prices it from the model catalog, so it answers instantly and costs nothing.
+
+Two cost figures are reported separately, because they are not the same thing:
+
+- **What OpenCode reports**: the billed cost it recorded. Subscription providers authenticated over OAuth report `$0`, since they do not bill per token.
+- **Estimated cost**: the same tokens priced at list price, resolved from the running provider catalog first and from OpenCode's models.dev cache (`~/.cache/opencode/models.json`) when the provider reports nothing. A `≥` prefix means at least one model had no price anywhere in the catalog and is missing from the total.
+
+The estimate follows OpenCode's own formula, `input + (output + reasoning) + cache read + cache write`, each at its own rate. Reasoning tokens bill at the output rate and are counted separately from `output`, not folded into it. The over-200K context tier is applied per request, not to the session total.
+
+For Convoy sessions the dialog adds an `advisor` row. Convoy calls the advisor outside the OpenCode session, so those tokens live only in `~/.convoy/runs/<runID>/logs/<phase>.*.json`; without that row an advised pipeline under-reports by the entire advisor leg, which can be most of its cost.
 
 ## Quick Install
 
@@ -111,10 +129,11 @@ mkdir -p ~/.config/opencode/plugins ~/.config/opencode/tui-plugins ~/.config/ope
 cp plugins/server/session-notifications.js ~/.config/opencode/plugins/session-notifications.js
 ```
 
-3. Copy the TUI plugin.
+3. Copy the TUI plugins.
 
 ```sh
 cp plugins/tui/status-title.js ~/.config/opencode/tui-plugins/status-title.js
+cp plugins/tui/session-usage.js ~/.config/opencode/tui-plugins/session-usage.js
 ```
 
 4. Copy the agents.
@@ -148,11 +167,11 @@ If you do not have a `tui.json`, you can use:
 ```json
 {
   "$schema": "https://opencode.ai/tui.json",
-  "plugin": ["./tui-plugins/status-title.js"]
+  "plugin": ["./tui-plugins/status-title.js", "./tui-plugins/session-usage.js"]
 }
 ```
 
-If you already have a `tui.json`, add `"./tui-plugins/status-title.js"` to the existing `plugin` array.
+If you already have a `tui.json`, add `"./tui-plugins/status-title.js"` and `"./tui-plugins/session-usage.js"` to the existing `plugin` array.
 
 8. Register the build agent color in `~/.config/opencode/opencode.json`.
 
@@ -224,6 +243,7 @@ Remove these files:
 ```sh
 rm -f ~/.config/opencode/plugins/session-notifications.js
 rm -f ~/.config/opencode/tui-plugins/status-title.js
+rm -f ~/.config/opencode/tui-plugins/session-usage.js
 rm -f ~/.config/opencode/agents/ask.md
 rm -f ~/.config/opencode/agents/fast.md
 rm -f ~/.config/opencode/agents/design.md
@@ -243,4 +263,4 @@ rm -f ~/.config/opencode/bin/opencode-branch
 rm -f ~/.config/opencode/bin/opencode-branch-open
 ```
 
-Then remove `"./tui-plugins/status-title.js"` from `~/.config/opencode/tui.json` and restart OpenCode.
+Then remove `"./tui-plugins/status-title.js"` and `"./tui-plugins/session-usage.js"` from `~/.config/opencode/tui.json` and restart OpenCode.
