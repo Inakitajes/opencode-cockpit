@@ -1,7 +1,7 @@
 ---
 description: Full-access fast agent using GLM 5.2 on OpenRouter Nitro
 mode: primary
-model: openrouter/z-ai/glm-5.2:nitro
+model: openrouter/z-ai/glm-5.2
 color: "#22c55e"
 permission:
   question: allow

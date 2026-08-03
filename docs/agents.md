@@ -9,7 +9,7 @@ This repo keeps a versioned copy of the global OpenCode agents stored in `~/.con
 | `build` | Current/default model | `primary` | Default implementation agent. |
 | `plan` | Current/default model | `primary` | Read-only planning, analysis, and audit reports. |
 | `ask` | `openrouter/z-ai/glm-4.7` with throughput routing | `all` | Read-only investigation, explanation, codebase exploration, and web research. |
-| `fast` | `openrouter/z-ai/glm-5.2:nitro` | `primary` | Full-access fast implementation agent for day-to-day work, not available for subagent delegation. |
+| `fast` | `openrouter/z-ai/glm-5.2` with throughput routing | `primary` | Full-access fast implementation agent for day-to-day work, not available for subagent delegation. |
 | `design` | `openrouter/moonshotai/kimi-k3` | `primary` | UI/UX specialist for design-system-aware frontend work. |
 
 ## Colors
@@ -48,7 +48,7 @@ Use this when you want safe research without filesystem edits or shell execution
 
 ### `fast`
 
-Use this for general-purpose implementation where speed matters. It uses GLM 5.2 through OpenRouter's `:nitro` variant. It keeps a permissive workflow for asking clarifying questions or entering plan mode, and is primary-only so agents cannot delegate work to it as a subagent.
+Use this for general-purpose implementation where speed matters. It uses GLM 5.2 through OpenRouter with throughput routing, which selects the fastest available provider. It keeps a permissive workflow for asking clarifying questions or entering plan mode, and is primary-only so agents cannot delegate work to it as a subagent.
 
 ### `design`
 

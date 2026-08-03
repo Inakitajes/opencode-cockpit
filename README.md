@@ -25,7 +25,7 @@ This repo includes a versioned copy of your global custom agents:
 - `build`: default implementation agent.
 - `ask`: read-only agent for research, codebase exploration, and web research.
 - `plan`: primary read-only agent for planning, analysis, and audits.
-- `fast`: fast full-access primary agent using GLM 5.2 on OpenRouter Nitro; not available as a subagent.
+- `fast`: fast full-access primary agent using GLM 5.2 with OpenRouter throughput routing; not available as a subagent.
 - `design`: UI/UX specialist using Kimi K3 on OpenRouter.
 
 Agent colors are pinned for stable TUI identification: `plan` blue, `build` gold, `design` orange, `fast` green, and `ask` violet.

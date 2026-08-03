@@ -15,6 +15,13 @@
               "sort": "throughput"
             }
           }
+        },
+        "z-ai/glm-5.2": {
+          "options": {
+            "provider": {
+              "sort": "throughput"
+            }
+          }
         }
       }
     }

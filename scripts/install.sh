@@ -164,7 +164,7 @@ if (fs.existsSync(file)) {
     config = raw.trim() ? JSON.parse(raw) : { $schema: schema }
   } catch (error) {
     console.error(`Could not update ${file}: it is not plain JSON.`)
-    console.error('Add provider.openrouter.models["z-ai/glm-4.7"].options.provider.sort = "throughput" and agent.build.color manually.')
+    console.error('Add provider.openrouter.models["z-ai/glm-5.2"].options.provider.sort = "throughput" and agent.build.color manually.')
     process.exit(2)
   }
 }
@@ -180,11 +180,16 @@ config.provider.openrouter.models ??= {}
 config.provider.openrouter.models["z-ai/glm-4.7"] ??= {}
 config.provider.openrouter.models["z-ai/glm-4.7"].options ??= {}
 config.provider.openrouter.models["z-ai/glm-4.7"].options.provider ??= {}
+config.provider.openrouter.models["z-ai/glm-5.2"] ??= {}
+config.provider.openrouter.models["z-ai/glm-5.2"].options ??= {}
+config.provider.openrouter.models["z-ai/glm-5.2"].options.provider ??= {}
 
-const provider = config.provider.openrouter.models["z-ai/glm-4.7"].options.provider
+const glm47Provider = config.provider.openrouter.models["z-ai/glm-4.7"].options.provider
+const glm52Provider = config.provider.openrouter.models["z-ai/glm-5.2"].options.provider
 const pluginExists = config.plugin.some((item) => item === pluginEntry || (Array.isArray(item) && item[0] === pluginEntry))
-const changed = provider.sort !== "throughput" || config.agent.build.color !== buildAgentColor || !pluginExists
-provider.sort = "throughput"
+const changed = glm47Provider.sort !== "throughput" || glm52Provider.sort !== "throughput" || config.agent.build.color !== buildAgentColor || !pluginExists
+glm47Provider.sort = "throughput"
+glm52Provider.sort = "throughput"
 config.agent.build.color = buildAgentColor
 if (!pluginExists) config.plugin.push(pluginEntry)
 
@@ -198,7 +203,7 @@ if (existed) {
 fs.writeFileSync(file, `${JSON.stringify(config, null, 2)}\n`)
 NODE
 else
-  printf 'Node.js is not available. Add OpenRouter throughput routing for z-ai/glm-4.7, build agent color "%s", and plugin "%s" to %s manually.\n' "${BUILD_AGENT_COLOR}" "${OPENCODE_PLUGIN_ENTRY}" "${OPENCODE_JSON}" >&2
+  printf 'Node.js is not available. Add OpenRouter throughput routing for z-ai/glm-4.7 and z-ai/glm-5.2, build agent color "%s", and plugin "%s" to %s manually.\n' "${BUILD_AGENT_COLOR}" "${OPENCODE_PLUGIN_ENTRY}" "${OPENCODE_JSON}" >&2
 fi
 
 printf 'Installed OpenCode cockpit files into %s\n' "${CONFIG_DIR}"
